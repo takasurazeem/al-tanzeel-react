@@ -131,3 +131,10 @@
 .removeButton:hover {
   background: #777;
 }
+
+.columnTitle {
+  color: #000;
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 1.2rem;
+}

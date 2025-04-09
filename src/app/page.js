@@ -8,6 +8,7 @@ export default function Home() {
   const [selectedChapter, setSelectedChapter] = useState(null);
   const [selectedVerse, setSelectedVerse] = useState(null);
   const [selectedVerses, setSelectedVerses] = useState([]);
+  const [verseSearchTerm, setVerseSearchTerm] = useState('');
 
   useEffect(() => {
     const loadChapters = async () => {
@@ -27,6 +28,10 @@ export default function Home() {
     chapter.transliteration.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const filteredVerses = selectedChapter?.verses?.filter(verse =>
+    verse.id.toString().includes(verseSearchTerm)
+  );
+
   const handleChapterClick = (chapter) => {
     setSelectedChapter(chapter);
     setSelectedVerse(null); // Reset selected verse
@@ -44,8 +49,9 @@ export default function Home() {
   return (
     <div className={styles.container}>
       <div className={styles.grid}>
-        {/* First Column - Chapter List */}
+        {/* First Column - Chapters */}
         <div className={styles.column}>
+          <h3 className={styles.columnTitle}>Select Surah</h3>
           <input
             type="text"
             placeholder="Search by ID or name..."
@@ -68,8 +74,16 @@ export default function Home() {
         
         {/* Second Column - Verses */}
         <div className={styles.column}>
+          <h3 className={styles.columnTitle}>Select Verses</h3>
+          <input
+            type="text"
+            placeholder="Search verse by ID..."
+            value={verseSearchTerm}
+            onChange={(e) => setVerseSearchTerm(e.target.value)}
+            className={styles.searchInput}
+          />
           <div className={styles.verseList}>
-            {selectedChapter?.verses?.map((verse) => (
+            {filteredVerses?.map((verse) => (
               <div key={verse.id} className={styles.verseItem}>
                 <input
                   type="checkbox"
@@ -82,9 +96,9 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Third Column - Selected Verses List */}
+        {/* Third Column - Selected Verses */}
         <div className={styles.column}>
-          <h3 style={{color: '#fff'}}>Selected Verses</h3>
+          <h3 className={styles.columnTitle}>Selected Verses</h3>
           <ul className={styles.selectedVersesList}>
             {selectedVerses.map(verse => (
               <li key={verse.id} className={styles.selectedVerseItem}>
