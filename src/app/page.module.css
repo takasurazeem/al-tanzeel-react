@@ -1,4 +1,6 @@
 .container {
+  width: 90%;
+  margin: 0 auto;
   padding: 20px;
   min-height: 100vh;
   display: flex;
@@ -29,7 +31,8 @@
   grid-template-columns: auto 1fr auto;
   gap: 20px;
   padding: 20px;
-  height: 100vh;
+  height: calc(100vh - 40px); /* Account for container padding */
+  width: 100%;
 }
 
 .column {
