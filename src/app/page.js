@@ -1,95 +1,107 @@
-import Image from "next/image";
+'use client';
+import { useState, useEffect } from 'react';
 import styles from "./page.module.css";
 
 export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.js</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [chapters, setChapters] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedChapter, setSelectedChapter] = useState(null);
+  const [selectedVerse, setSelectedVerse] = useState(null);
+  const [selectedVerses, setSelectedVerses] = useState([]);
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+  useEffect(() => {
+    const loadChapters = async () => {
+      try {
+        const response = await fetch('/Quran_ur.json');
+        const data = await response.json();
+        setChapters(data);
+      } catch (error) {
+        console.error('Error loading chapters:', error);
+      }
+    };
+    loadChapters();
+  }, []);
+
+  const filteredChapters = chapters.filter(chapter => 
+    chapter.id.toString().includes(searchTerm) ||
+    chapter.transliteration.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleChapterClick = (chapter) => {
+    setSelectedChapter(chapter);
+    setSelectedVerse(null); // Reset selected verse
+  };
+
+  const handleVerseSelect = (verse) => {
+    setSelectedVerses(prev => {
+      if (prev.find(v => v.id === verse.id)) {
+        return prev.filter(v => v.id !== verse.id);
+      }
+      return [...prev, verse];
+    });
+  };
+
+  return (
+    <div className={styles.container}>
+      <div className={styles.grid}>
+        {/* First Column - Chapter List */}
+        <div className={styles.column}>
+          <input
+            type="text"
+            placeholder="Search by ID or name..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className={styles.searchInput}
+          />
+          <div className={styles.chapterList}>
+            {filteredChapters.map((chapter) => (
+              <div 
+                key={chapter.id} 
+                className={`${styles.chapterItem} ${selectedChapter?.id === chapter.id ? styles.selected : ''}`}
+                onClick={() => handleChapterClick(chapter)}
+              >
+                {chapter.id}. {chapter.transliteration}
+              </div>
+            ))}
+          </div>
         </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        
+        {/* Second Column - Verses */}
+        <div className={styles.column}>
+          <div className={styles.verseList}>
+            {selectedChapter?.verses?.map((verse) => (
+              <div key={verse.id} className={styles.verseItem}>
+                <input
+                  type="checkbox"
+                  checked={selectedVerses.some(v => v.id === verse.id)}
+                  onChange={() => handleVerseSelect(verse)}
+                />
+                <span>{verse.id}. {verse.text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Third Column - Selected Verses List */}
+        <div className={styles.column}>
+          <h3 style={{color: '#fff'}}>Selected Verses</h3>
+          <ul className={styles.selectedVersesList}>
+            {selectedVerses.map(verse => (
+              <li key={verse.id} className={styles.selectedVerseItem}>
+                <span>{verse.text}</span>
+                <button 
+                  className={styles.removeButton}
+                  onClick={() => handleVerseSelect(verse)}
+                >
+                  ×
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
     </div>
   );
 }
+
+
