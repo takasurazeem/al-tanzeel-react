@@ -9,6 +9,7 @@ export default function Home() {
   const [selectedVerse, setSelectedVerse] = useState(null);
   const [selectedVerses, setSelectedVerses] = useState([]);
   const [verseSearchTerm, setVerseSearchTerm] = useState('');
+  const [fontSize, setFontSize] = useState(32); // Change from 18 to 32
 
   useEffect(() => {
     const loadChapters = async () => {
@@ -46,8 +47,31 @@ export default function Home() {
     });
   };
 
+  const handleReset = () => {
+    if (window.confirm('Are you sure you want to reset all selections?')) {
+      setSelectedChapter(null);
+      setSelectedVerse(null);
+      setSelectedVerses([]);
+      setSearchTerm('');
+      setVerseSearchTerm('');
+    }
+  };
+
   return (
     <div className={styles.container}>
+      <div className={styles.topControls}>
+        <button 
+          className={styles.resetButton}
+          onClick={handleReset}
+        >
+          Reset
+        </button>
+        <div className={styles.fontControls}>
+          <button onClick={() => setFontSize(prev => Math.max(12, prev - 2))}>A-</button>
+          <span>{fontSize}px</span>
+          <button onClick={() => setFontSize(prev => Math.min(48, prev + 2))}>A+</button>
+        </div>
+      </div>
       <div className={styles.grid}>
         {/* First Column - Chapters */}
         <div className={styles.column}>
@@ -84,7 +108,7 @@ export default function Home() {
           />
           <div className={styles.verseList}>
             {filteredVerses?.map((verse) => (
-              <div key={verse.id} className={styles.verseItem}>
+              <div key={verse.id} className={styles.verseItem} style={{ fontSize: `${fontSize}px` }}>
                 <input
                   type="checkbox"
                   checked={selectedVerses.some(v => v.id === verse.id)}
@@ -97,7 +121,7 @@ export default function Home() {
         </div>
 
         {/* Third Column - Selected Verses */}
-        <div className={styles.column}>
+        <div className={styles.column} style={{ fontSize: `${fontSize}px` }}>
           <h3 className={styles.columnTitle}>Selected Verses</h3>
           <ul className={styles.selectedVersesList}>
             {selectedVerses.map(verse => (

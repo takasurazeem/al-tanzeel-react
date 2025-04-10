@@ -33,7 +33,7 @@
 
 .grid {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr 1fr;
   gap: 20px;
   padding: 20px;
   height: calc(100vh - 40px); /* Account for container padding */
@@ -122,6 +122,7 @@
   color: #fff;
   direction: rtl;
   font-family: 'QuranFont', Arial, sans-serif;
+  font-size: inherit; /* Inherit font size from parent */
 }
 
 .selectedVerseItem {
@@ -135,6 +136,7 @@
   direction: rtl;
   text-align: right;
   font-family: 'QuranFont', Arial, sans-serif;
+  font-size: inherit; /* Inherit font size from parent */
 }
 
 .removeButton {
@@ -155,4 +157,51 @@
   margin-top: 0;
   margin-bottom: 16px;
   font-size: 1.2rem;
+}
+
+.fontControls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+.fontControls button {
+  background: #333;
+  border: none;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.fontControls span {
+  color: white;
+  min-width: 40px;
+  text-align: center;
+}
+
+.topControls {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 0 20px;
+}
+
+.resetButton {
+  background: #d32f2f;
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.resetButton:hover {
+  background: #b71c1c;
 }
