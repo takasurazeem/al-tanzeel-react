@@ -91,6 +91,13 @@
   direction: rtl;
   text-align: right;
   font-family: 'QuranFont', Arial, sans-serif;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.verseItem:hover {
+  background: #444;
+  border-radius: 4px;
 }
 
 .verseList {

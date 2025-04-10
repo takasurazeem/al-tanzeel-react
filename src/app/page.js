@@ -108,11 +108,19 @@ export default function Home() {
           />
           <div className={styles.verseList}>
             {filteredVerses?.map((verse) => (
-              <div key={verse.id} className={styles.verseItem} style={{ fontSize: `${fontSize}px` }}>
+              <div 
+                key={verse.id} 
+                className={styles.verseItem} 
+                style={{ fontSize: `${fontSize}px` }}
+                onClick={() => handleVerseSelect(verse)}
+              >
                 <input
                   type="checkbox"
                   checked={selectedVerses.some(v => v.id === verse.id)}
-                  onChange={() => handleVerseSelect(verse)}
+                  onChange={(e) => {
+                    e.stopPropagation(); // Prevent double triggering
+                    handleVerseSelect(verse);
+                  }}
                 />
                 <span>{verse.id}. {verse.text}</span>
               </div>
