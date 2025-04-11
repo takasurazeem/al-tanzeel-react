@@ -66,15 +66,14 @@ export default function Home() {
         >
           Reset
         </button>
+        <h2 className={styles.rowTitle}>Verses for Translation</h2>
         <div className={styles.fontControls}>
           <button onClick={() => setFontSize(prev => Math.max(12, prev - 2))}>A-</button>
           <span>{fontSize}px</span>
           <button onClick={() => setFontSize(prev => Math.min(48, prev + 2))}>A+</button>
         </div>
       </div>
-      {/* Title for First Row */}
-      <h2 className={styles.rowTitle}>Verses for Translation</h2>
-      {/* First Row */}
+      {/* First Row - Remove duplicate title */}
       <div className={styles.grid}>
         <ChapterList 
           chapters={filteredChapters}
@@ -97,9 +96,8 @@ export default function Home() {
           onRemoveVerse={handleVerseSelect}
         />
       </div>
-      {/* Title for Second Row */}
-      <h2 className={styles.rowTitle}>Verses for Words Meanings</h2>
       {/* Second Row */}
+      <h2 className={styles.rowTitle}>Verses for Words Meanings</h2>
       <div className={styles.grid}>
         <div className={styles.column}></div>
         <div className={styles.column}></div>

@@ -37,6 +37,8 @@
   gap: 20px;
   padding: 20px;
   width: 100%;
+  /* Calculate height: total viewport - topControls - rowTitle - padding */
+  height: calc((100vh - 180px) / 2);
 }
 
 .column {
@@ -59,7 +61,7 @@
 }
 
 .chapterList {
-  height: calc(100vh - 100px);
+  height: calc(100% - 60px); /* Account for title and search input */
   overflow-y: auto;
   background: #333;
   border-radius: 4px;
@@ -101,7 +103,7 @@
 }
 
 .verseList {
-  height: calc(100vh - 100px);
+  height: calc(100% - 60px); /* Account for title and search input */
   overflow-y: auto;
   background: #333;
   border-radius: 4px;
@@ -130,6 +132,8 @@
   direction: rtl;
   font-family: 'QuranFont', Arial, sans-serif;
   font-size: inherit; /* Inherit font size from parent */
+  height: calc(100% - 60px); /* Account for title and search input */
+  overflow-y: auto;
 }
 
 .selectedVerseItem {
@@ -170,18 +174,14 @@
 .rowTitle {
   font-size: 1.5rem;
   font-weight: bold;
-  margin-bottom: 20px;
-  text-align: center;
-  color: #fff; /* Make the title white */
+  color: #fff;
+  margin: 0; /* Remove margin since it's now in topControls */
+  height: 40px;
 }
 
 .fontControls {
   display: flex;
   gap: 10px;
-  align-items: center;
-  width: 100%;
-  justify-content: flex-end;
-  margin-bottom: 20px;
   align-items: center;
 }
 
@@ -205,8 +205,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
   padding: 0 20px;
+  height: 60px;
+  background-color: transparent;
 }
 
 .resetButton {
