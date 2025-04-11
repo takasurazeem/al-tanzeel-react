@@ -80,15 +80,28 @@ export default function Home() {
     }
   };
 
+  const handleGeneratePDF = () => {
+    // TODO: Implement PDF generation
+    console.log('PDF generation clicked');
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.topControls}>
-        <button
-          className={styles.resetButton}
-          onClick={handleReset}
-        >
-          Reset
-        </button>
+        <div className={styles.leftControls}>
+          <button 
+            className={styles.resetButton}
+            onClick={handleReset}
+          >
+            Reset
+          </button>
+          <button
+            className={styles.pdfButton}
+            onClick={handleGeneratePDF}
+          >
+            Generate PDF
+          </button>
+        </div>
         <h2 className={styles.rowTitle}>Verses for Translation</h2>
         <div className={styles.fontControls}>
           <button onClick={() => setFontSize(prev => Math.max(12, prev - 2))}>A-</button>
