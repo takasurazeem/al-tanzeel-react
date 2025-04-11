@@ -1,0 +1,41 @@
+.column {
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 16px;
+  overflow: hidden;
+  min-width: 200px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  color: #000;
+  background: white;
+}
+
+.chapterList {
+  height: calc(100% - 60px);
+  overflow-y: auto;
+  background: #333;
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.chapterItem {
+  padding: 8px;
+  border-bottom: 1px solid #444;
+  cursor: pointer;
+  color: #fff;
+  font-size: 16px;
+}
+
+.chapterItem:hover {
+  background: #444;
+}
+
+.selected {
+  background: #444;
+}

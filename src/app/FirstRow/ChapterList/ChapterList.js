@@ -1,8 +1,9 @@
-import styles from './page.module.css';
+import styles from './styles.module.css';
+import sharedStyles from '../../shared/styles/shared.module.css';
 
 export const ChapterList = ({ chapters, selectedChapter, onChapterSelect, searchTerm, onSearchChange }) => (
   <div className={styles.column}>
-    <h3 className={styles.columnTitle}>Select Surah</h3>
+    <h3 className={sharedStyles.columnTitle}>Select Surah</h3>
     <input
       type="text"
       placeholder="Search by ID or name..."

@@ -1,8 +1,9 @@
-import styles from './page.module.css';
+import styles from '../../shared/styles/verseList.module.css';
+import sharedStyles from '../../shared/styles/shared.module.css';
 
 export const VerseList = ({ verses, fontSize, onVerseSelect, selectedVerses, searchTerm, onSearchChange }) => (
   <div className={styles.column}>
-    <h3 className={styles.columnTitle}>Select Verses</h3>
+    <h3 className={sharedStyles.columnTitle}>Select Verses</h3>
     <input
       type="text"
       placeholder="Search verse by ID..."

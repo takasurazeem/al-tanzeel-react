@@ -1,0 +1,40 @@
+.column {
+    background: #f5f5f5;
+    border-radius: 8px;
+    padding: 16px;
+    overflow: hidden;
+  }
+  
+  .wordsContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px;
+    height: calc(100% - 60px);
+    overflow-y: auto;
+    background: #333;
+    border-radius: 4px;
+    direction: rtl;
+    align-items: flex-start; /* Prevent stretching */
+    align-content: flex-start; /* Start from top */
+  }
+  
+  .wordChip {
+    height: fit-content; /* Prevent stretching */
+    padding: 8px 16px;
+    border-radius: 16px;
+    background: #444;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-family: 'QuranFont', Arial, sans-serif;
+    transition: background-color 0.2s;
+  }
+  
+  .wordChip:hover {
+    background: #555;
+  }
+  
+  .wordChip.selected {
+    background: #1976d2;
+  }
