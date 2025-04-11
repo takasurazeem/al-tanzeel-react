@@ -7,6 +7,7 @@ import { SelectedVersesList } from './FirstRow/SelectedVersesList/SelectedVerses
 import { SelectVersesForWordsMeanings } from './SecondRow/SelectVersesForWordsMeanings/SelectVersesForWordsMeanings';
 import { WordsFromSelectedVerses } from './SecondRow/WordsFromSelectedVerses/WordsFromSelectedVerses';
 import { SelectedWordsForTranslation } from './SecondRow/SelectedWordsForTranslation/SelectedWordsForTranslation';
+import { generateDecoratePDF } from './utils/pdfGenerator';
 
 export default function Home() {
   const [chapters, setChapters] = useState([]);
@@ -81,8 +82,7 @@ export default function Home() {
   };
 
   const handleGeneratePDF = () => {
-    // TODO: Implement PDF generation
-    console.log('PDF generation clicked');
+    generateDecoratePDF(true); // Pass true to open print dialog
   };
 
   return (
