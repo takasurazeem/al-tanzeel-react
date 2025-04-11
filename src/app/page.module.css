@@ -36,7 +36,6 @@
   grid-template-columns: auto 1fr 1fr;
   gap: 20px;
   padding: 20px;
-  height: calc(100vh - 40px); /* Account for container padding */
   width: 100%;
 }
 
@@ -44,6 +43,7 @@
   background: #f5f5f5;
   border-radius: 8px;
   padding: 16px;
+  min-height: 100px; /* Ensure visible height for empty columns */
   overflow: hidden;
   min-width: 200px; /* Prevents columns from getting too narrow */
 }
@@ -160,10 +160,19 @@
 }
 
 .columnTitle {
-  color: #000;
-  margin-top: 0;
-  margin-bottom: 16px;
   font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  text-align: center;
+  color: #000;
+}
+
+.rowTitle {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-align: center;
+  color: #fff; /* Make the title white */
 }
 
 .fontControls {
