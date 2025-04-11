@@ -1,0 +1,64 @@
+/* src/app/components/Sidebar/styles.module.css */
+.burger {
+  position: fixed;
+  top: 20px;
+  right: 20px; /* Change from left to right */
+  z-index: 1000;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+}
+
+.burgerLine {
+  width: 25px;
+  height: 3px;
+  background-color: white;
+  margin: 5px 0;
+  transition: 0.4s;
+}
+
+/* Update burger animation for right side */
+.burgerLine.open:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 6px);
+}
+
+.burgerLine.open:nth-child(2) {
+  opacity: 0;
+}
+
+.burgerLine.open:nth-child(3) {
+  transform: rotate(-45deg) translate(5px, -6px);
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  right: -300px; /* Change from left to right */
+  height: 100vh;
+  width: 300px;
+  background-color: #333;
+  z-index: 999;
+  transition: 0.3s;
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2); /* Adjust shadow direction */
+}
+
+.sidebar.open {
+  right: 0; /* Change from left to right */
+}
+
+.content {
+  padding: 20px;
+  color: white;
+  margin-top: 60px;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 998;
+}

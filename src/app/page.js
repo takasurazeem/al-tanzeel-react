@@ -8,6 +8,7 @@ import { SelectVersesForWordsMeanings } from './SecondRow/SelectVersesForWordsMe
 import { WordsFromSelectedVerses } from './SecondRow/WordsFromSelectedVerses/WordsFromSelectedVerses';
 import { SelectedWordsForTranslation } from './SecondRow/SelectedWordsForTranslation/SelectedWordsForTranslation';
 import { generateDecoratePDF } from './utils/pdfGenerator';
+import { Sidebar } from './components/Sidebar/Sidebar';
 
 export default function Home() {
   const [chapters, setChapters] = useState([]);
@@ -87,6 +88,7 @@ export default function Home() {
 
   return (
     <div className={styles.container}>
+      <Sidebar />
       <div className={styles.topControls}>
         <div className={styles.leftControls}>
           <button 
