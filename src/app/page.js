@@ -1,15 +1,17 @@
 'use client';
 import { useState, useEffect } from 'react';
 import styles from "./page.module.css";
+import { ChapterList } from './ChapterList';
+import { VerseList } from './VerseList';
+import { SelectedVersesList } from './SelectedVersesList';
 
 export default function Home() {
   const [chapters, setChapters] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedChapter, setSelectedChapter] = useState(null);
-  const [selectedVerse, setSelectedVerse] = useState(null);
   const [selectedVerses, setSelectedVerses] = useState([]);
   const [verseSearchTerm, setVerseSearchTerm] = useState('');
-  const [fontSize, setFontSize] = useState(32); // Change from 18 to 32
+  const [fontSize, setFontSize] = useState(32);
 
   useEffect(() => {
     const loadChapters = async () => {
@@ -35,7 +37,6 @@ export default function Home() {
 
   const handleChapterClick = (chapter) => {
     setSelectedChapter(chapter);
-    setSelectedVerse(null); // Reset selected verse
   };
 
   const handleVerseSelect = (verse) => {
@@ -50,7 +51,6 @@ export default function Home() {
   const handleReset = () => {
     if (window.confirm('Are you sure you want to reset all selections?')) {
       setSelectedChapter(null);
-      setSelectedVerse(null);
       setSelectedVerses([]);
       setSearchTerm('');
       setVerseSearchTerm('');
@@ -73,78 +73,26 @@ export default function Home() {
         </div>
       </div>
       <div className={styles.grid}>
-        {/* First Column - Chapters */}
-        <div className={styles.column}>
-          <h3 className={styles.columnTitle}>Select Surah</h3>
-          <input
-            type="text"
-            placeholder="Search by ID or name..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className={styles.searchInput}
-          />
-          <div className={styles.chapterList}>
-            {filteredChapters.map((chapter) => (
-              <div 
-                key={chapter.id} 
-                className={`${styles.chapterItem} ${selectedChapter?.id === chapter.id ? styles.selected : ''}`}
-                onClick={() => handleChapterClick(chapter)}
-              >
-                {chapter.id}. {chapter.transliteration}
-              </div>
-            ))}
-          </div>
-        </div>
-        
-        {/* Second Column - Verses */}
-        <div className={styles.column}>
-          <h3 className={styles.columnTitle}>Select Verses</h3>
-          <input
-            type="text"
-            placeholder="Search verse by ID..."
-            value={verseSearchTerm}
-            onChange={(e) => setVerseSearchTerm(e.target.value)}
-            className={styles.searchInput}
-          />
-          <div className={styles.verseList}>
-            {filteredVerses?.map((verse) => (
-              <div 
-                key={verse.id} 
-                className={styles.verseItem} 
-                style={{ fontSize: `${fontSize}px` }}
-                onClick={() => handleVerseSelect(verse)}
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedVerses.some(v => v.id === verse.id)}
-                  onChange={(e) => {
-                    e.stopPropagation(); // Prevent double triggering
-                    handleVerseSelect(verse);
-                  }}
-                />
-                <span>{verse.id}. {verse.text}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Third Column - Selected Verses */}
-        <div className={styles.column} style={{ fontSize: `${fontSize}px` }}>
-          <h3 className={styles.columnTitle}>Selected Verses</h3>
-          <ul className={styles.selectedVersesList}>
-            {selectedVerses.map(verse => (
-              <li key={verse.id} className={styles.selectedVerseItem}>
-                <span>{verse.text}</span>
-                <button 
-                  className={styles.removeButton}
-                  onClick={() => handleVerseSelect(verse)}
-                >
-                  ×
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <ChapterList 
+          chapters={filteredChapters}
+          selectedChapter={selectedChapter}
+          onChapterSelect={handleChapterClick}
+          searchTerm={searchTerm}
+          onSearchChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <VerseList 
+          verses={filteredVerses}
+          fontSize={fontSize}
+          onVerseSelect={handleVerseSelect}
+          selectedVerses={selectedVerses}
+          searchTerm={verseSearchTerm}
+          onSearchChange={(e) => setVerseSearchTerm(e.target.value)}
+        />
+        <SelectedVersesList 
+          verses={selectedVerses}
+          fontSize={fontSize}
+          onRemoveVerse={handleVerseSelect}
+        />
       </div>
     </div>
   );
