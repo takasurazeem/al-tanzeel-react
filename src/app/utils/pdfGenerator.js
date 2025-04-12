@@ -4,7 +4,7 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
     // Create high-resolution canvas
     const canvas = document.createElement('canvas');
     canvas.width = 3000;
-    canvas.height = 500;
+    canvas.height = 400; // Reduced height
     const ctx = canvas.getContext('2d', { alpha: false });
     
     // Enable high-quality rendering
@@ -33,32 +33,27 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
       compress: false
     });
 
-    // PDF dimensions
+    // PDF dimensions with adjusted margins
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
-    const margin = 15;
+    const margin = 10; // Reduced margin for better space usage
     
-    // Draw decorative border
-    pdf.setDrawColor(28, 40, 51);
-    pdf.setLineWidth(0.5);
+    // Draw single stylish dashed border
+    pdf.setDrawColor(28, 40, 51); // Dark blue-grey color
+    pdf.setLineWidth(1.5); // Thicker line for emphasis
+    
+    // Set dashed line pattern
+    pdf.setLineDashPattern([8, 4], 0); // 8mm dash, 4mm gap
     pdf.rect(margin, margin, pageWidth - 2 * margin, pageHeight - 2 * margin);
+    
+    // Reset line style for other elements
+    pdf.setLineDashPattern([], 0);
 
-    // Inner border
-    pdf.setLineWidth(0.2);
-    pdf.rect(margin + 3, margin + 3, pageWidth - 2 * (margin + 3), pageHeight - 2 * (margin + 3));
-
-    // Add corner decorations
-    const cornerSize = 10;
-    pdf.line(margin, margin + cornerSize, margin + cornerSize, margin);
-    pdf.line(pageWidth - margin - cornerSize, margin, pageWidth - margin, margin + cornerSize);
-    pdf.line(margin, pageHeight - margin - cornerSize, margin + cornerSize, pageHeight - margin);
-    pdf.line(pageWidth - margin - cornerSize, pageHeight - margin, pageWidth - margin, pageHeight - margin - cornerSize);
-
-    // Calculate image dimensions
-    const imgWidth = pageWidth * 0.8;
+    // Adjust content positioning
+    const imgWidth = pageWidth * 0.85; // Increased width for better proportions
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
     const x = (pageWidth - imgWidth) / 2;
-    const y = 40; // Positioned below header
+    const y = 25; // Slightly reduced top margin
 
     // Add canvas image to PDF
     const imgData = canvas.toDataURL('image/png', 1.0);
