@@ -19,6 +19,10 @@ export default function Home() {
   const [fontSize, setFontSize] = useState(32);
   const [secondRowSelectedVerses, setSecondRowSelectedVerses] = useState([]);
   const [selectedWords, setSelectedWords] = useState([]);
+  const [preferences, setPreferences] = useState({
+    className: '',
+    masjidName: ''
+  });
 
   useEffect(() => {
     const loadChapters = async () => {
@@ -83,12 +87,13 @@ export default function Home() {
   };
 
   const handleGeneratePDF = () => {
-    generateDecoratePDF(true); // Pass true to open print dialog
+    const firstVerse = chapters[0]?.verses[0]?.text || '';
+    generateDecoratePDF(true, preferences, firstVerse);
   };
 
   return (
     <div className={styles.container}>
-      <Sidebar />
+      <Sidebar onPreferencesChange={setPreferences} />
       <div className={styles.topControls}>
         <div className={styles.leftControls}>
           <button 

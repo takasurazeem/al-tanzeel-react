@@ -62,3 +62,36 @@
   background: rgba(0, 0, 0, 0.5);
   z-index: 998;
 }
+
+.preferencesForm {
+  margin-top: 20px;
+}
+
+.formGroup {
+  margin-bottom: 15px;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 5px;
+  color: #fff;
+}
+
+.input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #555;
+  border-radius: 4px;
+  background: #444;
+  color: white;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #666;
+  background: #505050;
+}
+
+.input::placeholder {
+  color: #888;
+}
