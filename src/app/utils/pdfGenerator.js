@@ -33,27 +33,27 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
       compress: false
     });
 
-    // PDF dimensions with adjusted margins
+    // PDF dimensions with minimal margins
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
-    const margin = 10; // Reduced margin for better space usage
+    const margin = 5; // Reduced from 10 to 5mm
     
-    // Draw single stylish dashed border
-    pdf.setDrawColor(28, 40, 51); // Dark blue-grey color
-    pdf.setLineWidth(1.5); // Thicker line for emphasis
+    // Draw single stylish dashed border with softer color
+    pdf.setDrawColor(67, 82, 96); // Softer blue-grey color
+    pdf.setLineWidth(0.8); // Reduced thickness for more delicate look
     
-    // Set dashed line pattern
-    pdf.setLineDashPattern([8, 4], 0); // 8mm dash, 4mm gap
+    // Set smaller dashed line pattern
+    pdf.setLineDashPattern([4, 2], 0); // 4mm dash, 2mm gap - smaller pattern
     pdf.rect(margin, margin, pageWidth - 2 * margin, pageHeight - 2 * margin);
     
     // Reset line style for other elements
     pdf.setLineDashPattern([], 0);
 
-    // Adjust content positioning
-    const imgWidth = pageWidth * 0.85; // Increased width for better proportions
+    // Adjust content positioning for smaller margins
+    const imgWidth = pageWidth * 0.9; // Increased to 90% for better use of space
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
     const x = (pageWidth - imgWidth) / 2;
-    const y = 25; // Slightly reduced top margin
+    const y = 20; // Reduced top margin to 20mm
 
     // Add canvas image to PDF
     const imgData = canvas.toDataURL('image/png', 1.0);
