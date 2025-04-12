@@ -1,5 +1,8 @@
+import '../app/shared/styles/fonts.css';
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import '@fontsource/noto-sans-arabic';
+import '@fontsource/amiri';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

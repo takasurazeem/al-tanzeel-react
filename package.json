@@ -9,6 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@fontsource/amiri": "^5.2.5",
+    "@fontsource/noto-sans-arabic": "^5.2.6",
+    "canvas": "^3.1.0",
     "jspdf": "^3.0.1",
     "next": "15.3.0",
     "react": "^19.0.0",
