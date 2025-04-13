@@ -1,6 +1,13 @@
 @font-face {
   font-family: 'QuranFont';
-  src: url('/pdms-saleem-quranfont.ttf') format('truetype');
+  src: url('/fonts/pdms-saleem-quranfont.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'NotoNastaliqUrdu';
+  src: url('/fonts/NotoNastaliqUrdu-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900; /* Variable font weight range */
+  font-display: swap;
 }
 
 .container {

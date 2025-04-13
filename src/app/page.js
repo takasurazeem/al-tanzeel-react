@@ -88,7 +88,9 @@ export default function Home() {
 
   const handleGeneratePDF = () => {
     // Use the first selected verse if available, otherwise use empty string
-    const firstVerse = selectedVerses[0]?.text || '';
+    // Load firstVerse from chapters, first chapter, first verse
+    const firstChapter = chapters[0];
+    const firstVerse = firstChapter?.verses[0]?.text || '';
     generateDecoratePDF(true, preferences, firstVerse);
   };
 
