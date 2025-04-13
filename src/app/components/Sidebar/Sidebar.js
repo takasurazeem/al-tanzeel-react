@@ -1,80 +1,105 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import styles from './styles.module.css';
 
-export const Sidebar = () => {
+export const Sidebar = ({ onPreferencesChange }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [preferences, setPreferences] = useState({
+  const [formData, setFormData] = useState({
     className: '',
     masjidName: ''
   });
 
-  // Load saved preferences on mount
+  // Load preferences from localStorage on mount
   useEffect(() => {
-    const savedPreferences = localStorage.getItem('quranAppPreferences');
-    if (savedPreferences) {
-      setPreferences(JSON.parse(savedPreferences));
+    try {
+      const savedData = localStorage.getItem('quranPreferences');
+      if (savedData) {
+        const parsed = JSON.parse(savedData);
+        setFormData(parsed);
+        // Notify parent component if callback exists
+        onPreferencesChange?.(parsed);
+      }
+    } catch (error) {
+      console.error('Error loading preferences:', error);
     }
   }, []);
 
-  // Save preferences when they change
-  const handleInputChange = (e) => {
+  // Save preferences to localStorage whenever they change
+  const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
-    const newPreferences = { ...preferences, [name]: value };
-    setPreferences(newPreferences);
-    localStorage.setItem('quranAppPreferences', JSON.stringify(newPreferences));
-    onPreferencesChange(newPreferences); // Pass preferences up to parent
-  };
+    const updatedData = {
+      ...formData,
+      [name]: value
+    };
+
+    try {
+      // Update state
+      setFormData(updatedData);
+      // Save to localStorage
+      localStorage.setItem('quranPreferences', JSON.stringify(updatedData));
+      // Notify parent component
+      onPreferencesChange?.(updatedData);
+    } catch (error) {
+      console.error('Error saving preferences:', error);
+    }
+  }, [formData, onPreferencesChange]);
 
   return (
-    <>
+    <div className={styles.sidebarContainer}>
+      {/* Hamburger Button */}
       <button 
-        className={styles.burger}
-        onClick={() => setIsOpen(!isOpen)}
+        className={styles.menuButton}
+        onClick={() => setIsOpen(prev => !prev)}
+        aria-label="Toggle Settings"
       >
-        <div className={`${styles.burgerLine} ${isOpen ? styles.open : ''}`}></div>
-        <div className={`${styles.burgerLine} ${isOpen ? styles.open : ''}`}></div>
-        <div className={`${styles.burgerLine} ${isOpen ? styles.open : ''}`}></div>
+        <span className={`${styles.menuIcon} ${isOpen ? styles.open : ''}`} />
       </button>
 
-      <div className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
-        <div className={styles.content}>
-          <h2>Settings</h2>
-          <form className={styles.preferencesForm}>
+      {/* Sidebar Panel */}
+      <aside className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
+        <div className={styles.sidebarContent}>
+          <h2 className={styles.title}>Settings</h2>
+          
+          <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
             <div className={styles.formGroup}>
               <label htmlFor="className">Class Name</label>
               <input
                 type="text"
                 id="className"
                 name="className"
-                value={preferences.className}
+                value={formData.className}
                 onChange={handleInputChange}
                 className={styles.input}
                 placeholder="Enter class name"
+                autoComplete="off"
               />
             </div>
+
             <div className={styles.formGroup}>
               <label htmlFor="masjidName">Masjid Name</label>
               <input
                 type="text"
                 id="masjidName"
                 name="masjidName"
-                value={preferences.masjidName}
+                value={formData.masjidName}
                 onChange={handleInputChange}
                 className={styles.input}
                 placeholder="Enter masjid name"
+                autoComplete="off"
               />
             </div>
           </form>
         </div>
-      </div>
+      </aside>
 
+      {/* Backdrop */}
       {isOpen && (
         <div 
-          className={styles.overlay}
+          className={styles.backdrop}
           onClick={() => setIsOpen(false)}
+          aria-hidden="true"
         />
       )}
-    </>
+    </div>
   );
 };
