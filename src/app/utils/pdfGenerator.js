@@ -130,7 +130,7 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
     dateFieldCtx.fillStyle = 'black';
     dateFieldCtx.textAlign = 'left';
     dateFieldCtx.textBaseline = 'middle';
-    dateFieldCtx.font = '60px "QuranFont", "Noto Sans Arabic", Arial, sans-serif'; // Reduced to 60px for better size
+    dateFieldCtx.font = '60px "NotoNastaliqUrdu", "Noto Sans Arabic", Arial, sans-serif'; // Use NotoNastaliqUrdu for Urdu text
     dateFieldCtx.direction = 'rtl';
     dateFieldCtx.fillText(`بتاریخ: ${dateToUse}`, 20, dateFieldCanvas.height / 2);
     
@@ -154,7 +154,7 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
     nameFieldCtx.fillStyle = 'black';
     nameFieldCtx.textAlign = 'right';
     nameFieldCtx.textBaseline = 'middle';
-    nameFieldCtx.font = '60px "QuranFont", "Noto Sans Arabic", Arial, sans-serif'; // Reduced to 60px for better size
+    nameFieldCtx.font = '60px "NotoNastaliqUrdu", "Noto Sans Arabic", Arial, sans-serif'; // Use NotoNastaliqUrdu for Urdu text
     nameFieldCtx.direction = 'rtl';
     nameFieldCtx.fillText('نام طالب علم:', nameFieldCanvas.width - 20, nameFieldCanvas.height / 2);
     
@@ -197,7 +197,7 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
       textCtx.fillStyle = 'black';
       textCtx.textAlign = textAlign;
       textCtx.textBaseline = 'middle';
-      textCtx.font = '90px "QuranFont", "Noto Sans Arabic", Arial, sans-serif'; // Increased from 72px to 90px
+      textCtx.font = '90px "NotoNastaliqUrdu", "Noto Sans Arabic", Arial, sans-serif'; // Use NotoNastaliqUrdu for Urdu text (masjid/class names)
       textCtx.direction = 'rtl';
       
       // Draw the text at edges (no padding)
