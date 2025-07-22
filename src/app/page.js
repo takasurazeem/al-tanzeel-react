@@ -19,6 +19,7 @@ export default function Home() {
   const [fontSize, setFontSize] = useState(32);
   const [secondRowSelectedVerses, setSecondRowSelectedVerses] = useState([]);
   const [selectedWords, setSelectedWords] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]); // Default to today
   const [preferences, setPreferences] = useState({
     className: '',
     masjidName: ''
@@ -92,8 +93,8 @@ export default function Home() {
     const firstChapter = chapters[0];
     const firstVerse = firstChapter?.verses[0]?.text || '';
     
-    // Pass the selected verses for translation and selected words to the PDF generator
-    generateDecoratePDF(true, preferences, firstVerse, selectedVerses, selectedWords);
+    // Pass the selected verses for translation, selected words, and selected date to the PDF generator
+    generateDecoratePDF(true, preferences, firstVerse, selectedVerses, selectedWords, selectedDate);
   };
 
   return (
@@ -113,6 +114,16 @@ export default function Home() {
           >
             Generate PDF
           </button>
+          <div className={styles.datePickerContainer}>
+            <label htmlFor="worksheetDate" className={styles.dateLabel}>Date:</label>
+            <input
+              id="worksheetDate"
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className={styles.datePicker}
+            />
+          </div>
         </div>
         <h2 className={styles.rowTitle}>Verses for Translation</h2>
         <div className={styles.fontControls}>
