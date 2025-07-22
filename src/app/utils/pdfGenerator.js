@@ -267,7 +267,7 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
         verseCtx.fillStyle = 'black';
         verseCtx.textAlign = 'right';
         verseCtx.textBaseline = 'middle';
-        verseCtx.font = '90px "QuranFont", "Noto Sans Arabic", Arial, sans-serif'; // Increased from 64px to 90px
+        verseCtx.font = '120px "QuranFont", "Noto Sans Arabic", Arial, sans-serif'; // Increased to 120px
         verseCtx.direction = 'rtl';
         
         // Draw the Arabic text
@@ -307,11 +307,34 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
           const arabicImgHeight = (arabicCanvas.height * arabicImgWidth) / arabicCanvas.width;
           pdf.addImage(arabicImgData, 'PNG', 15, currentY, arabicImgWidth, arabicImgHeight, undefined, 'FAST');
           
-          // Add simple circle symbol on the RIGHT side (✤ doesn't work in jsPDF)
-          pdf.setFont('helvetica', 'bold');
-          pdf.setFontSize(20); // Bigger symbol
-          pdf.setTextColor(0, 0, 0);
-          pdf.text('○', pageWidth - 15, currentY + (arabicImgHeight / 2)); // Use simple circle
+          // Use reference mark (※) with canvas rendering and QuranFont
+          const markerCanvas = document.createElement('canvas');
+          markerCanvas.width = 120; // Smaller width to prevent border overlap
+          markerCanvas.height = 60; // Smaller height
+          const markerCtx = markerCanvas.getContext('2d', { alpha: false });
+          
+          // Configure marker canvas
+          markerCtx.imageSmoothingEnabled = true;
+          markerCtx.imageSmoothingQuality = 'high';
+          markerCtx.fillStyle = 'white';
+          markerCtx.fillRect(0, 0, markerCanvas.width, markerCanvas.height);
+          markerCtx.fillStyle = 'black';
+          markerCtx.textAlign = 'center';
+          markerCtx.textBaseline = 'middle';
+          markerCtx.font = '36px "QuranFont", "Noto Sans Arabic", Arial, sans-serif'; // Match verse font size ratio
+          markerCtx.direction = 'rtl';
+          
+          // Use reference mark
+          const markerText = '※';
+          
+          // Draw marker text on canvas
+          markerCtx.fillText(markerText, markerCanvas.width / 2, markerCanvas.height / 2);
+          
+          // Add marker canvas to PDF with smaller size to prevent overlap
+          const markerImgData = markerCanvas.toDataURL('image/png', 1.0);
+          const markerImgWidth = 12; // Smaller width to prevent border overlap
+          const markerImgHeight = (markerCanvas.height * markerImgWidth) / markerCanvas.width;
+          pdf.addImage(markerImgData, 'PNG', pageWidth - 18, currentY + (arabicImgHeight / 2) - (markerImgHeight / 2), markerImgWidth, markerImgHeight, undefined, 'FAST');
           
           currentY += arabicImgHeight + 2; // Minimal spacing
         }
