@@ -118,8 +118,8 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
     
     // Create date field (left side) - "بتاریخ:"
     const dateFieldCanvas = document.createElement('canvas');
-    dateFieldCanvas.width = 700;
-    dateFieldCanvas.height = 60;
+    dateFieldCanvas.width = 1200; // Increased width to match name field
+    dateFieldCanvas.height = 120; // Increased height to match header fields
     const dateFieldCtx = dateFieldCanvas.getContext('2d', { alpha: false });
     
     // Configure date field canvas
@@ -130,20 +130,20 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
     dateFieldCtx.fillStyle = 'black';
     dateFieldCtx.textAlign = 'left';
     dateFieldCtx.textBaseline = 'middle';
-    dateFieldCtx.font = '40px "QuranFont", "Noto Sans Arabic", Arial, sans-serif';
+    dateFieldCtx.font = '60px "QuranFont", "Noto Sans Arabic", Arial, sans-serif'; // Reduced to 60px for better size
     dateFieldCtx.direction = 'rtl';
-    dateFieldCtx.fillText(`بتاریخ: ${dateToUse}`, 15, dateFieldCanvas.height / 2);
+    dateFieldCtx.fillText(`بتاریخ: ${dateToUse}`, 20, dateFieldCanvas.height / 2);
     
     // Add date field to PDF (left side)
     const dateFieldImgData = dateFieldCanvas.toDataURL('image/png', 1.0);
-    const dateFieldWidth = 85;
+    const dateFieldWidth = 100; // Increased to accommodate larger text
     const dateFieldHeight = (dateFieldCanvas.height * dateFieldWidth) / dateFieldCanvas.width;
     pdf.addImage(dateFieldImgData, 'PNG', 10, nameFieldY, dateFieldWidth, dateFieldHeight, undefined, 'FAST');
     
-    // Create student name field (right side) - "نام طالب علم:" - LARGER AND MORE READABLE
+    // Create student name field (right side) - "نام طالب علم:" - SAME SIZE AS HEADERS
     const nameFieldCanvas = document.createElement('canvas');
-    nameFieldCanvas.width = 1200; // Increased width for better rendering
-    nameFieldCanvas.height = 80;  // Increased height
+    nameFieldCanvas.width = 1200; // Same as date field
+    nameFieldCanvas.height = 120; // Increased to match header fields and date field
     const nameFieldCtx = nameFieldCanvas.getContext('2d', { alpha: false });
     
     // Configure name field canvas
@@ -154,13 +154,13 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
     nameFieldCtx.fillStyle = 'black';
     nameFieldCtx.textAlign = 'right';
     nameFieldCtx.textBaseline = 'middle';
-    nameFieldCtx.font = '55px "QuranFont", "Noto Sans Arabic", Arial, sans-serif'; // Increased from 40px to 55px
+    nameFieldCtx.font = '60px "QuranFont", "Noto Sans Arabic", Arial, sans-serif'; // Reduced to 60px for better size
     nameFieldCtx.direction = 'rtl';
     nameFieldCtx.fillText('نام طالب علم:', nameFieldCanvas.width - 20, nameFieldCanvas.height / 2);
     
-    // Add name field to PDF (right side) - LARGER
+    // Add name field to PDF (right side) - SAME SIZE AS DATE
     const nameFieldImgData = nameFieldCanvas.toDataURL('image/png', 1.0);
-    const nameFieldWidth = 85; // Increased from 65 to 85
+    const nameFieldWidth = 100; // Increased to match date field
     const nameFieldHeight = (nameFieldCanvas.height * nameFieldWidth) / nameFieldCanvas.width;
     const nameFieldX = pageWidth - nameFieldWidth - 10;
     pdf.addImage(nameFieldImgData, 'PNG', nameFieldX, nameFieldY, nameFieldWidth, nameFieldHeight, undefined, 'FAST');
