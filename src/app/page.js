@@ -91,7 +91,9 @@ export default function Home() {
     // Load firstVerse from chapters, first chapter, first verse
     const firstChapter = chapters[0];
     const firstVerse = firstChapter?.verses[0]?.text || '';
-    generateDecoratePDF(true, preferences, firstVerse);
+    
+    // Pass the selected verses for translation and selected words to the PDF generator
+    generateDecoratePDF(true, preferences, firstVerse, selectedVerses, selectedWords);
   };
 
   return (
