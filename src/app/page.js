@@ -19,10 +19,12 @@ export default function Home() {
   const [fontSize, setFontSize] = useState(32);
   const [secondRowSelectedVerses, setSecondRowSelectedVerses] = useState([]);
   const [selectedWords, setSelectedWords] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]); // Default to today
   const [preferences, setPreferences] = useState({
     className: '',
-    masjidName: ''
+    masjidName: '',
+    selectedDate: new Date().toISOString().split('T')[0],
+    calendarType: 'gregorian',
+    hijriDate: null
   });
 
   useEffect(() => {
@@ -87,14 +89,49 @@ export default function Home() {
     }
   };
 
+  const getDisplayDate = () => {
+    if (preferences.calendarType === 'hijri' && preferences.hijriDate) {
+      // For UI display, use English
+      const monthNames = ['Muharram', 'Safar', "Rabi' I", "Rabi' II", 'Jumada I', 'Jumada II', 'Rajab', "Sha'ban", 'Ramadan', 'Shawwal', "Dhu al-Qi'dah", 'Dhu al-Hijjah'];
+      const monthName = monthNames[preferences.hijriDate.month - 1];
+      return `${preferences.hijriDate.day} ${monthName} ${preferences.hijriDate.year} AH`;
+    } else {
+      return new Date(preferences.selectedDate || new Date()).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    }
+  };
+
+  const getPDFDate = () => {
+    if (preferences.calendarType === 'hijri' && preferences.hijriDate) {
+      // For PDF, use Urdu/Arabic format
+      const monthNames = [
+        'محرم', 'صفر', 'ربیع الاول', 'ربیع الآخر', 
+        'جمادی الاولیٰ', 'جمادی الآخرہ', 'رجب', 'شعبان', 
+        'رمضان', 'شوال', 'ذوالقعدہ', 'ذوالحجہ'
+      ];
+      const monthName = monthNames[preferences.hijriDate.month - 1];
+      return `${preferences.hijriDate.day} ${monthName} ${preferences.hijriDate.year} ہجری`;
+    } else {
+      return new Date(preferences.selectedDate || new Date()).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    }
+  };
+
   const handleGeneratePDF = () => {
     // Use the first selected verse if available, otherwise use empty string
     // Load firstVerse from chapters, first chapter, first verse
     const firstChapter = chapters[0];
     const firstVerse = firstChapter?.verses[0]?.text || '';
     
-    // Pass the selected verses for translation, selected words, and selected date to the PDF generator
-    generateDecoratePDF(true, preferences, firstVerse, selectedVerses, selectedWords, selectedDate);
+    // Pass the selected verses for translation, selected words, and PDF-formatted date to the PDF generator
+    const pdfDate = getPDFDate();
+    generateDecoratePDF(true, preferences, firstVerse, selectedVerses, selectedWords, pdfDate);
   };
 
   return (
@@ -114,16 +151,6 @@ export default function Home() {
           >
             Generate PDF
           </button>
-          <div className={styles.datePickerContainer}>
-            <label htmlFor="worksheetDate" className={styles.dateLabel}>Date:</label>
-            <input
-              id="worksheetDate"
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className={styles.datePicker}
-            />
-          </div>
         </div>
         <h2 className={styles.rowTitle}>Verses for Translation</h2>
         <div className={styles.fontControls}>

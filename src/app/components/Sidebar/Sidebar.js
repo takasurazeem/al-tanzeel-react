@@ -1,6 +1,14 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import styles from './styles.module.css';
+import { HijriDatePicker } from '../HijriDatePicker/HijriDatePicker';
+import { 
+  gregorianToHijri, 
+  hijriToGregorian, 
+  formatHijriDate, 
+  getCurrentHijriDate,
+  isValidHijriDate 
+} from '../../utils/hijriCalendar';
 
 export const Sidebar = ({ onPreferencesChange }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -8,6 +16,9 @@ export const Sidebar = ({ onPreferencesChange }) => {
     className: '',
     masjidName: ''
   });
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [calendarType, setCalendarType] = useState('gregorian');
+  const [hijriDate, setHijriDate] = useState(getCurrentHijriDate());
 
   // Load preferences from localStorage on mount
   useEffect(() => {
@@ -16,6 +27,14 @@ export const Sidebar = ({ onPreferencesChange }) => {
       if (savedData) {
         const parsed = JSON.parse(savedData);
         setFormData(parsed);
+        
+        // Load calendar preferences if they exist
+        if (parsed.selectedDate) setSelectedDate(parsed.selectedDate);
+        if (parsed.calendarType) setCalendarType(parsed.calendarType);
+        if (parsed.hijriDate) {
+          setHijriDate(parsed.hijriDate);
+        }
+        
         // Notify parent component if callback exists
         onPreferencesChange?.(parsed);
       }
@@ -29,12 +48,15 @@ export const Sidebar = ({ onPreferencesChange }) => {
     const { name, value } = e.target;
     const updatedData = {
       ...formData,
-      [name]: value
+      [name]: value,
+      selectedDate,
+      calendarType,
+      hijriDate
     };
 
     try {
       // Update state
-      setFormData(updatedData);
+      setFormData(prev => ({ ...prev, [name]: value }));
       // Save to localStorage
       localStorage.setItem('quranPreferences', JSON.stringify(updatedData));
       // Notify parent component
@@ -42,7 +64,129 @@ export const Sidebar = ({ onPreferencesChange }) => {
     } catch (error) {
       console.error('Error saving preferences:', error);
     }
-  }, [formData, onPreferencesChange]);
+  }, [formData, selectedDate, calendarType, hijriDate, onPreferencesChange]);
+
+  const handleCalendarTypeChange = (type) => {
+    setCalendarType(type);
+    if (type === 'hijri') {
+      // Convert current Gregorian date to Hijri
+      try {
+        const currentHijri = gregorianToHijri(new Date(selectedDate));
+        setHijriDate(currentHijri);
+      } catch (error) {
+        console.error('Error converting Gregorian to Hijri:', error);
+      }
+    } else {
+      // Convert current Hijri to Gregorian
+      if (hijriDate) {
+        try {
+          const gregorianDate = hijriToGregorian(hijriDate);
+          if (gregorianDate && !isNaN(gregorianDate.getTime())) {
+            setSelectedDate(gregorianDate.toISOString().split('T')[0]);
+          } else {
+            console.warn('Invalid Gregorian date conversion, keeping current date');
+          }
+        } catch (error) {
+          console.error('Error converting Hijri to Gregorian:', error);
+        }
+      }
+    }
+    
+    // Save preferences
+    const updatedData = {
+      ...formData,
+      selectedDate,
+      calendarType: type,
+      hijriDate
+    };
+    
+    try {
+      localStorage.setItem('quranPreferences', JSON.stringify(updatedData));
+      onPreferencesChange?.(updatedData);
+    } catch (error) {
+      console.error('Error saving calendar preferences:', error);
+    }
+  };
+
+  const handleHijriDateChange = (newHijriDate) => {
+    setHijriDate(newHijriDate);
+    
+    let gregorianDateString = selectedDate; // Default fallback
+    
+    // Convert to Gregorian for internal use with error handling
+    if (newHijriDate) {
+      try {
+        const gregorianDate = hijriToGregorian(newHijriDate);
+        
+        // Check if the date is valid
+        if (gregorianDate && !isNaN(gregorianDate.getTime())) {
+          gregorianDateString = gregorianDate.toISOString().split('T')[0];
+          setSelectedDate(gregorianDateString);
+        } else {
+          console.warn('Invalid Gregorian date conversion from Hijri:', newHijriDate);
+          // Keep the current selectedDate as fallback
+        }
+      } catch (error) {
+        console.error('Error converting Hijri to Gregorian:', error, newHijriDate);
+        // Keep the current selectedDate as fallback
+      }
+    }
+    
+    // Save preferences
+    const updatedData = {
+      ...formData,
+      selectedDate: gregorianDateString,
+      calendarType,
+      hijriDate: newHijriDate
+    };
+    
+    try {
+      localStorage.setItem('quranPreferences', JSON.stringify(updatedData));
+      onPreferencesChange?.(updatedData);
+    } catch (error) {
+      console.error('Error saving hijri date preferences:', error);
+    }
+  };
+
+  const handleDateChange = (e) => {
+    setSelectedDate(e.target.value);
+    
+    // If in hijri mode, convert to hijri
+    if (calendarType === 'hijri') {
+      const newHijri = gregorianToHijri(new Date(e.target.value));
+      setHijriDate(newHijri);
+    }
+    
+    // Save preferences
+    const updatedData = {
+      ...formData,
+      selectedDate: e.target.value,
+      calendarType,
+      hijriDate: calendarType === 'hijri' ? gregorianToHijri(new Date(e.target.value)) : hijriDate
+    };
+    
+    try {
+      localStorage.setItem('quranPreferences', JSON.stringify(updatedData));
+      onPreferencesChange?.(updatedData);
+    } catch (error) {
+      console.error('Error saving date preferences:', error);
+    }
+  };
+
+  const getDisplayDate = () => {
+    if (calendarType === 'hijri' && hijriDate) {
+      // Format Hijri date for display
+      const monthNames = ['Muharram', 'Safar', "Rabi' I", "Rabi' II", 'Jumada I', 'Jumada II', 'Rajab', "Sha'ban", 'Ramadan', 'Shawwal', "Dhu al-Qi'dah", 'Dhu al-Hijjah'];
+      const monthName = monthNames[hijriDate.month - 1];
+      return `${hijriDate.day} ${monthName} ${hijriDate.year} AH`;
+    } else {
+      return new Date(selectedDate).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    }
+  };
 
   return (
     <div className={styles.sidebarContainer}>
@@ -87,6 +231,53 @@ export const Sidebar = ({ onPreferencesChange }) => {
                 placeholder="Enter masjid name"
                 autoComplete="off"
               />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>Date Settings</label>
+              <div className={styles.datePickerContainer}>
+                <div className={styles.calendarTypeSelector}>
+                  <button 
+                    type="button"
+                    className={`${styles.calendarButton} ${calendarType === 'gregorian' ? styles.active : ''}`}
+                    onClick={() => handleCalendarTypeChange('gregorian')}
+                  >
+                    Gregorian
+                  </button>
+                  <button 
+                    type="button"
+                    className={`${styles.calendarButton} ${calendarType === 'hijri' ? styles.active : ''}`}
+                    onClick={() => handleCalendarTypeChange('hijri')}
+                  >
+                    Hijri
+                  </button>
+                </div>
+                
+                {calendarType === 'gregorian' ? (
+                  <div className={styles.dateInputContainer}>
+                    <input
+                      type="date"
+                      value={selectedDate}
+                      min={new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+                      onChange={handleDateChange}
+                      className={styles.datePicker}
+                    />
+                  </div>
+                ) : (
+                  <div className={styles.hijriDateInputContainer}>
+                    <div className={styles.hijriDatePickerWrapper}>
+                      <HijriDatePicker
+                        value={hijriDate}
+                        onChange={handleHijriDateChange}
+                        placeholder="Select Hijri date"
+                      />
+                    </div>
+                    <div className={styles.dateDisplay}>
+                      {getDisplayDate()}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </form>
         </div>

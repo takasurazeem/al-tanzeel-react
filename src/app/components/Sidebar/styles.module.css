@@ -218,3 +218,181 @@
 .input::placeholder {
   color: #888;
 }
+
+/* Date Picker Styles */
+.datePickerContainer {
+  margin-top: 8px;
+}
+
+.calendarTypeSelector {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+  background: #2a2a2a;
+  border-radius: 6px;
+  padding: 2px;
+}
+
+.calendarButton {
+  background: transparent;
+  border: none;
+  color: #ccc;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  flex: 1;
+  text-align: center;
+}
+
+.calendarButton:hover {
+  color: white;
+  background: #3a3a3a;
+}
+
+.calendarButton.active {
+  background: #4a90e2;
+  color: white;
+}
+
+.dateInputContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hijriDateInputContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hijriDatePickerWrapper {
+  background: #2a2a2a;
+  border: 1px solid #555;
+  border-radius: 6px;
+  padding: 2px;
+}
+
+.hijriDatePicker {
+  width: 100%;
+  background: #1a1a1a !important;
+  border: none !important;
+  color: white !important;
+  padding: 8px 12px !important;
+  font-size: 13px !important;
+  border-radius: 4px !important;
+  outline: none !important;
+}
+
+.hijriDatePicker:focus {
+  background: #2a2a2a !important;
+  border-color: #4a90e2 !important;
+}
+
+/* Style the Hijri calendar dropdown */
+:global(.react-datepicker) {
+  background: #1a1a1a !important;
+  border: 1px solid #555 !important;
+  border-radius: 6px !important;
+  color: white !important;
+  font-family: inherit !important;
+}
+
+:global(.react-datepicker__header) {
+  background: #2a2a2a !important;
+  border-bottom: 1px solid #555 !important;
+  color: white !important;
+}
+
+:global(.react-datepicker__current-month) {
+  color: white !important;
+  font-weight: 500 !important;
+}
+
+:global(.react-datepicker__day-name) {
+  color: #ccc !important;
+}
+
+:global(.react-datepicker__day) {
+  color: white !important;
+  background: transparent !important;
+}
+
+:global(.react-datepicker__day:hover) {
+  background: #4a90e2 !important;
+  color: white !important;
+}
+
+:global(.react-datepicker__day--selected) {
+  background: #4a90e2 !important;
+  color: white !important;
+}
+
+:global(.react-datepicker__day--today) {
+  background: #333 !important;
+  color: #4a90e2 !important;
+  font-weight: bold !important;
+}
+
+:global(.react-datepicker__navigation) {
+  border: none !important;
+}
+
+:global(.react-datepicker__navigation--previous) {
+  border-right-color: white !important;
+}
+
+:global(.react-datepicker__navigation--next) {
+  border-left-color: white !important;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 480px) {
+  .hijriDatePickerWrapper {
+    width: 100%;
+  }
+  
+  .hijriDatePicker {
+    font-size: 14px !important;
+    padding: 10px 12px !important;
+  }
+}
+
+.hijriInputs {
+  display: none; /* Remove old styling */
+}
+
+.hijriInput {
+  display: none; /* Remove old styling */
+}
+
+.datePicker {
+  background: #2a2a2a;
+  border: 1px solid #555;
+  border-radius: 4px;
+  color: white;
+  padding: 6px 8px;
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.2s ease;
+  width: 100%;
+}
+
+.datePicker:focus {
+  border-color: #4a90e2;
+}
+
+.dateDisplay {
+  font-size: 12px;
+  color: #4a90e2;
+  text-align: center;
+  padding: 8px;
+  background: #1a1a1a;
+  border-radius: 4px;
+  border: 1px solid #333;
+  font-weight: 500;
+  margin-top: 4px;
+}

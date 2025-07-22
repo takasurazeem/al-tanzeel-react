@@ -221,13 +221,22 @@
   background: #d32f2f;
   border: none;
   color: white;
-  padding: 8px 16px;
-  border-radius: 4px;
+  padding: 0 16px;
+  height: 40px;
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .resetButton:hover {
   background: #b71c1c;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .leftControls {
@@ -236,36 +245,24 @@
   align-items: center;
 }
 
-.datePickerContainer {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.dateLabel {
-  color: white;
-  font-size: 14px;
-  font-weight: bold;
-}
-
-.datePicker {
-  padding: 6px 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background: white;
-  color: #000;
-  font-size: 14px;
-}
-
 .pdfButton {
   background: #2e7d32;
   border: none;
   color: white;
-  padding: 8px 16px;
-  border-radius: 4px;
+  padding: 0 16px;
+  height: 40px;
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .pdfButton:hover {
   background: #1b5e20;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }

@@ -168,7 +168,7 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
     // Draw single full-width horizontal line beneath both fields
     pdf.setDrawColor(0, 0, 0);
     pdf.setLineWidth(0.5);
-    const fullLineY = nameFieldY + Math.max(dateFieldHeight, nameFieldHeight) + 3; // Position below both fields
+    const fullLineY = nameFieldY + Math.max(dateFieldHeight, nameFieldHeight); // No gap - directly below fields
     pdf.line(10, fullLineY, pageWidth - 10, fullLineY); // Full width line from margin to margin
 
     // Create canvases for header texts FIRST (before verses and words)
