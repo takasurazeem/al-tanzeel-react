@@ -346,13 +346,46 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
         return verseCanvas;
       };
       
-      // Function to estimate lines needed based on translation length
-      const estimateLines = (translation) => {
-        if (!translation) return 1; // Just 1 line default
-        const charCount = translation.length;
-        const charsPerLine = 100; // More characters per line
-        const estimatedLines = Math.ceil(charCount / charsPerLine);
-        return Math.max(1, Math.min(estimatedLines, 3)); // Between 1-3 lines only
+      // Function to calculate accurate lines needed based on Urdu translation and page layout
+      const estimateLines = (verse) => {
+        if (!verse || !verse.translation) return 2; // Default minimum lines if no translation
+        
+        const urduTranslation = verse.translation;
+        
+        // Calculate available writing width based on page layout
+        const pageMargins = 15; // Left and right margins (15mm each side)
+        const availableWidth = pageWidth - (pageMargins * 2); // Total writing width in mm
+        
+        // Convert to pixels for accurate calculation (3.78 pixels per mm at 96 DPI)
+        const availableWidthPx = availableWidth * 3.78;
+        
+        // Average handwriting characteristics for Urdu/Arabic script
+        const avgCharWidthPx = 8; // Average character width for normal handwriting in pixels
+        const charsPerLine = Math.floor(availableWidthPx / avgCharWidthPx);
+        
+        // Calculate lines needed based on translation length
+        const translationLength = urduTranslation.length;
+        const baseLinesNeeded = Math.ceil(translationLength / charsPerLine);
+        
+        // Add buffer for natural line breaks and punctuation
+        const bufferMultiplier = 1.2; // 20% extra space for natural writing flow
+        const linesWithBuffer = Math.ceil(baseLinesNeeded * bufferMultiplier);
+        
+        // Page size adjustments for different formats
+        let pageSizeMultiplier = 1.0;
+        if (selectedPageSize.width >= 297) { // A3 and larger
+          pageSizeMultiplier = 1.3; // 30% more generous spacing
+        } else if (selectedPageSize.width <= 148) { // A5 and smaller
+          pageSizeMultiplier = 0.8; // 20% more compact
+        }
+        
+        const adjustedLines = Math.ceil(linesWithBuffer * pageSizeMultiplier);
+        
+        // Reasonable bounds based on translation length
+        const minLines = Math.max(2, Math.ceil(translationLength / 150)); // Minimum based on text length
+        const maxLines = Math.min(8, Math.ceil(translationLength / 50)); // Maximum with tighter packing
+        
+        return Math.max(minLines, Math.min(adjustedLines, maxLines));
       };
       
       selectedVerses.forEach((verse, index) => {
@@ -408,15 +441,33 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
           currentY += arabicImgHeight + 2; // Minimal spacing
         }
         
-        // Add empty lines for translation based on estimated length
-        const linesNeeded = estimateLines(verse.translation);
+        // Add empty lines for translation based on verse content and length
+        const linesNeeded = estimateLines(verse);
         pdf.setDrawColor(100, 100, 100); // Darker grey for lines
         pdf.setLineWidth(0.5); // Thicker lines
         
         for (let i = 0; i < linesNeeded; i++) {
           currentY += lineHeight;
-          // Draw horizontal line for writing
-          pdf.line(15, currentY, pageWidth - 15, currentY);
+          
+          // Check if the line would go beyond the page border
+          if (currentY > pageHeight - borderMargin - 5) { // Leave 5mm buffer from border
+            // Start new page
+            pdf.addPage();
+            currentY = borderMargin + 15; // Start after border with some margin
+            
+            // Redraw border on new page
+            pdf.setDrawColor(60, 60, 60);
+            pdf.setLineWidth(1.0);
+            pdf.setLineDashPattern([], 0);
+            pdf.rect(borderMargin, borderMargin, pageWidth - 2 * borderMargin, pageHeight - 2 * borderMargin);
+            
+            // Reset line drawing properties
+            pdf.setDrawColor(100, 100, 100);
+            pdf.setLineWidth(0.5);
+          }
+          
+          // Draw horizontal line for writing - full width touching borders for maximum writing space
+          pdf.line(borderMargin, currentY, pageWidth - borderMargin, currentY);
         }
         
         currentY += verseSpacing; // Minimal space before next verse

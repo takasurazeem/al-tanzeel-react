@@ -49,6 +49,9 @@ Located in `src/app/utils/pdfGenerator.js`:
 2. **Font embedding process**: Fetch TTF → ArrayBuffer → Base64 → jsPDF
 3. **Critical error handling**: PDF generation continues even if font loading fails
 4. **Preferences integration**: Masjid name and class name added to PDF headers
+5. **Dynamic canvas sizing**: Text measurement algorithms prevent clipping with RTL text
+6. **Page size support**: Configurable A4/A3/A5/Letter/Legal with responsive layouts
+7. **Intelligent translation lines**: Calculates writing space based on Urdu translation length and page dimensions
 
 ### Development Commands
 ```bash
@@ -64,6 +67,11 @@ npm start              # Production server
 - **preventDefault pattern**: Use `e.stopPropagation()` to prevent double-triggering
 - **Visual feedback**: Selected items use conditional className with `styles.selected`
 
+### Mobile Responsiveness
+- **Collapsible columns**: All components implement mobile collapse/expand functionality
+- **Auto-collapse**: ChapterList auto-collapses on mobile after chapter selection
+- **Responsive visibility**: Use `styles.hiddenOnMobileWhenNoChapter` for conditional mobile display
+
 ### Styling Conventions
 - **CSS Modules everywhere**: No global styles except fonts and layout
 - **Font size prop threading**: Dynamic `fontSize` prop passed down to text-rendering components
@@ -78,29 +86,33 @@ npm start              # Production server
 - **Word splitting algorithm**: `verse.text.split(' ')` for word extraction
 - **Unique word deduplication**: `[...new Set(words.flat())]` pattern
 - **RTL-aware styling**: Use CSS `direction: rtl` and proper text-align values
+- **Canvas text measurement**: Always measure text width before rendering to prevent clipping
 
 ## Integration Points
 
 ### External Dependencies
-- **jsPDF**: PDF generation with Arabic font embedding
-- **Canvas API**: High-quality text rendering for PDF export
+- **jsPDF**: PDF generation with Arabic font embedding and configurable page sizes
+- **Canvas API**: High-quality text rendering for PDF export with dynamic sizing
 - **Next.js Fonts**: Google Fonts (Geist) + custom font loading
 - **CSS Modules**: Component-scoped styling system
 
 ### Data Dependencies
-- **Quran JSON structure**: Each chapter has `{id, name, transliteration, verses: [{id, text, translation}]}`
-- **Font files**: Located in `public/fonts/` directory
-- **LocalStorage keys**: `quranPreferences` for user settings
+- **Quran JSON structure**: Each chapter has `{id, name, transliteration, translation, verses: [{id, text, translation}]}`
+- **Font files**: Located in `public/fonts/` directory with QuranFont and NotoNastaliqUrdu
+- **LocalStorage keys**: `quranPreferences` for user settings persistence
 
 ### Cross-Component Communication
-- **Sidebar ↔ Main**: Preferences flow through callback props
+- **Sidebar ↔ Main**: Preferences flow through callback props with immediate sync
 - **Search state**: Separate search terms for chapters (`searchTerm`) and verses (`verseSearchTerm`)
 - **Font size control**: Global font size state affects all text-rendering components
+- **Calendar system**: Hijri/Gregorian date conversion with `src/app/utils/hijriCalendar.js`
 
 ## Common Gotchas
 
 - **Dual verse arrays**: Don't confuse `selectedVerses` (first row) with `secondRowSelectedVerses` (second row)
 - **Font loading timing**: Always await font loading before canvas operations in PDF generation
-- **Arabic text direction**: Ensure RTL support in both CSS and canvas contexts
+- **Arabic text direction**: Ensure RTL support in both CSS and canvas contexts with proper alignment
 - **Selection toggle logic**: Use `find()` for existence check, `filter()` for removal
 - **Error boundaries**: Wrap localStorage and font operations in try-catch blocks
+- **Canvas text clipping**: Use dynamic canvas sizing based on text measurement for Arabic text
+- **Mobile layout**: Components must handle mobile collapse state and auto-expand behavior
