@@ -195,6 +195,7 @@ export default function Home() {
           selectedVerses={selectedVerses}
           searchTerm={verseSearchTerm}
           onSearchChange={(e) => setVerseSearchTerm(e.target.value)}
+          className={!selectedChapter ? styles.hiddenOnMobileWhenNoChapter : ''}
         />
         <SelectedVersesList
           verses={selectedVerses}

@@ -505,6 +505,11 @@
 
 /* Global mobile optimizations */
 @media (max-width: 767px) {
+  /* Hide Select Verses section on mobile when no chapter is selected */
+  .hiddenOnMobileWhenNoChapter {
+    display: none;
+  }
+  
   /* Better tap targets for specific button classes */
   .resetButton, .pdfButton, .removeButton {
     min-height: 32px; /* Consistent with our new button heights */

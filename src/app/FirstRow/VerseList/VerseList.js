@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import styles from '../../shared/styles/verseList.module.css';
 import sharedStyles from '../../shared/styles/shared.module.css';
 
-export const VerseList = ({ verses, fontSize, onVerseSelect, selectedVerses, searchTerm, onSearchChange }) => {
+export const VerseList = ({ verses, fontSize, onVerseSelect, selectedVerses, searchTerm, onSearchChange, className = '' }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -25,7 +25,7 @@ export const VerseList = ({ verses, fontSize, onVerseSelect, selectedVerses, sea
   const selectedCount = selectedVerses.length;
 
   return (
-    <div className={`${styles.column} ${isCollapsed && isMobile ? styles.collapsed : ''}`}>
+    <div className={`${styles.column} ${isCollapsed && isMobile ? styles.collapsed : ''} ${className}`.trim()}>
       <div className={styles.header}>
         <div className={styles.headerTitle}>
           <h3 className={sharedStyles.columnTitle}>Select Verses</h3>
