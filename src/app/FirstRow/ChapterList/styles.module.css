@@ -19,6 +19,28 @@
     min-height: 70px;
     max-height: 70px;
   }
+  
+  .header {
+    align-items: center;
+    min-height: 36px;
+  }
+  
+  .headerTitle {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .selectedInfo {
+    font-size: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .toggleButton {
+    flex-shrink: 0;
+    margin-left: 8px;
+  }
 }
 
 /* Desktop styles - no collapsing behavior */
@@ -44,9 +66,18 @@
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 16px;
   gap: 10px;
+  min-height: 40px;
+}
+
+.headerTitle {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0; /* Allow shrinking */
 }
 
 .selectedInfo {

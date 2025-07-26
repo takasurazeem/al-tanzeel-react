@@ -32,14 +32,14 @@ export const SelectedVersesList = ({ verses, fontSize, onRemoveVerse }) => {
   return (
     <div className={`${styles.column} ${isCollapsed && isMobile ? styles.collapsed : ''}`} style={{ fontSize: `${fontSize}px` }}>
       <div className={styles.header}>
-        <h3 className={sharedStyles.columnTitle}>
-          Selected Verses
-          {selectedCount > 0 && isMobile && (
+        <div className={styles.headerTitle}>
+          <h3 className={sharedStyles.columnTitle}>Selected Verses</h3>
+          {selectedCount > 0 && (
             <span className={styles.selectedInfo}>
-              - {selectedCount} verses
+              {selectedCount} verse{selectedCount !== 1 ? 's' : ''} selected
             </span>
           )}
-        </h3>
+        </div>
         {/* Only show toggle button on mobile */}
         {isMobile && (
           <button 

@@ -27,14 +27,14 @@ export const VerseList = ({ verses, fontSize, onVerseSelect, selectedVerses, sea
   return (
     <div className={`${styles.column} ${isCollapsed && isMobile ? styles.collapsed : ''}`}>
       <div className={styles.header}>
-        <h3 className={sharedStyles.columnTitle}>
-          Select Verses
-          {selectedCount > 0 && isMobile && (
+        <div className={styles.headerTitle}>
+          <h3 className={sharedStyles.columnTitle}>Select Verses</h3>
+          {selectedCount > 0 && (
             <span className={styles.selectedInfo}>
-              - {selectedCount} selected
+              {selectedCount} verse{selectedCount !== 1 ? 's' : ''} selected
             </span>
           )}
-        </h3>
+        </div>
         {/* Only show toggle button on mobile */}
         {isMobile && (
           <button 

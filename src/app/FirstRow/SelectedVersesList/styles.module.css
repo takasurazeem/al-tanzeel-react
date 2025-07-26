@@ -9,9 +9,18 @@
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 16px;
   gap: 10px;
+  min-height: 40px;
+}
+
+.headerTitle {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0; /* Allow shrinking */
 }
 
 .selectedInfo {
@@ -68,21 +77,25 @@
   }
   
   .header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
+    align-items: center;
+    min-height: 36px;
+  }
+  
+  .headerTitle {
+    flex: 1;
+    min-width: 0;
   }
   
   .selectedInfo {
     font-size: 0.8rem;
-    white-space: normal;
-    overflow: visible;
-    text-overflow: unset;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   
   .toggleButton {
-    align-self: flex-end;
-    margin-top: -32px;
+    flex-shrink: 0;
+    margin-left: 8px;
   }
 }
 

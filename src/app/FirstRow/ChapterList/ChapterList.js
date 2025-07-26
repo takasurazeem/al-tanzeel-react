@@ -37,14 +37,14 @@ export const ChapterList = ({ chapters, selectedChapter, onChapterSelect, search
   return (
     <div className={`${styles.chapterColumn} ${isCollapsed && isMobile ? styles.collapsed : ''}`}>
       <div className={styles.header}>
-        <h3 className={sharedStyles.columnTitle}>
-          Select Surah
-          {selectedChapter && isMobile && (
+        <div className={styles.headerTitle}>
+          <h3 className={sharedStyles.columnTitle}>Select Surah</h3>
+          {selectedChapter && (
             <span className={styles.selectedInfo}>
-              - {selectedChapter.id}. {selectedChapter.transliteration}
+              {selectedChapter.id}. {selectedChapter.transliteration}
             </span>
           )}
-        </h3>
+        </div>
         {/* Only show toggle button on mobile */}
         {isMobile && (
           <button 
