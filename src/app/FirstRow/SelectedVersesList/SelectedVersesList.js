@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import styles from './styles.module.css';
 import sharedStyles from '../../shared/styles/shared.module.css';
 
-export const SelectedVersesList = ({ verses, fontSize, onRemoveVerse }) => {
+export const SelectedVersesList = ({ verses, fontSize, onRemoveVerse, className = '' }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -30,7 +30,7 @@ export const SelectedVersesList = ({ verses, fontSize, onRemoveVerse }) => {
   }
 
   return (
-    <div className={`${styles.column} ${isCollapsed && isMobile ? styles.collapsed : ''}`} style={{ fontSize: `${fontSize}px` }}>
+    <div className={`${styles.column} ${isCollapsed && isMobile ? styles.collapsed : ''} ${className}`.trim()} style={{ fontSize: `${fontSize}px` }}>
       <div className={styles.header}>
         <div className={styles.headerTitle}>
           <h3 className={sharedStyles.columnTitle}>Selected Verses</h3>

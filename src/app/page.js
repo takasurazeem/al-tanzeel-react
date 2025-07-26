@@ -201,11 +201,12 @@ export default function Home() {
           verses={selectedVerses}
           fontSize={fontSize}
           onRemoveVerse={handleVerseSelect}
+          className={!selectedChapter ? styles.hiddenOnMobileWhenNoChapter : ''}
         />
       </div>
       {/* Second Row */}
-      <h2 className={styles.rowTitle}>Verses for Words Meanings</h2>
-      <div className={styles.grid}>
+      <h2 className={`${styles.rowTitle} ${!selectedChapter ? styles.hiddenOnMobileWhenNoChapter : ''}`}>Verses for Words Meanings</h2>
+      <div className={`${styles.grid} ${!selectedChapter ? styles.hiddenOnMobileWhenNoChapter : ''}`}>
         <SelectVersesForWordsMeanings
           verses={filteredVerses}
           fontSize={fontSize}
