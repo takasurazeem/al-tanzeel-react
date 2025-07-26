@@ -7,7 +7,9 @@ export const SelectedVersesList = ({ verses, fontSize, onRemoveVerse }) => (
     <ul className={styles.selectedVersesList}>
       {verses.map(verse => (
         <li key={verse.id} className={styles.selectedVerseItem}>
-          <span>{verse.text}</span>
+          <span style={{ flex: 1, wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+            {verse.text}
+          </span>
           <button 
             className={styles.removeButton}
             onClick={() => onRemoveVerse(verse)}

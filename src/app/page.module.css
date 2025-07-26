@@ -17,7 +17,7 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   background-color: #000;
 }
@@ -40,11 +40,11 @@
 
 .grid {
   display: grid;
-  grid-template-columns: auto 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr; /* Three equal columns */
   gap: 20px;
   padding: 20px;
   width: 100%;
-  /* Calculate height: total viewport - topControls - rowTitle - padding */
+  /* Fixed height for better control */
   height: calc((100vh - 180px) / 2);
 }
 
@@ -93,7 +93,7 @@
 
 .verseItem {
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* Changed from center to flex-start for better wrapping */
   gap: 10px;
   padding: 8px;
   color: #fff;
@@ -102,6 +102,11 @@
   font-family: 'QuranFont', Arial, sans-serif;
   cursor: pointer;
   transition: background-color 0.2s;
+  word-wrap: break-word;
+  line-height: 1.4;
+  min-height: fit-content;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .verseItem:hover {
@@ -150,11 +155,14 @@
   border-radius: 4px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start; /* Changed from center to flex-start */
   direction: rtl;
   text-align: right;
   font-family: 'QuranFont', Arial, sans-serif;
   font-size: inherit; /* Inherit font size from parent */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.4;
 }
 
 .removeButton {

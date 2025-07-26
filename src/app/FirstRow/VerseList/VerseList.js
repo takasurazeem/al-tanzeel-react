@@ -26,8 +26,11 @@ export const VerseList = ({ verses, fontSize, onVerseSelect, selectedVerses, sea
               e.stopPropagation(); // Prevent double triggering
               onVerseSelect(verse);
             }}
+            style={{ flexShrink: 0, marginTop: '4px' }}
           />
-          <span>{verse.id}. {verse.text}</span>
+          <span style={{ flex: 1, wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+            {verse.id}. {verse.text}
+          </span>
         </div>
       ))}
     </div>

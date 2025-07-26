@@ -23,10 +23,13 @@
   border-radius: 4px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   direction: rtl;
   text-align: right;
   font-family: 'QuranFont', Arial, sans-serif;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.4;
 }
 
 .removeButton {
@@ -36,6 +39,9 @@
   padding: 4px 8px;
   border-radius: 4px;
   cursor: pointer;
+  flex-shrink: 0;
+  margin-top: 2px;
+  align-self: flex-start;
 }
 
 .removeButton:hover {
