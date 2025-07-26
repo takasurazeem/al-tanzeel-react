@@ -136,7 +136,7 @@
 }
 
 .verseList {
-  height: calc(100% - 60px);
+  height: 100%;
   overflow-y: auto;
   background: #333;
   border-radius: 4px;
