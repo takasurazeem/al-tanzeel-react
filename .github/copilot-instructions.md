@@ -60,6 +60,24 @@ npm run build           # Standard Next.js build
 npm start              # Production server
 ```
 
+### Commit Message Guidelines
+- **Islamic formatting**: All commits automatically use `بِسْمِ الله` (Bismillah) prefix and `الحمدالله` (Alhamdulillah) suffix
+- **Detailed context required**: Commit messages must provide comprehensive context for future developers
+- **Structure format**: `[type]: [component/area] - [detailed description with context]`
+- **Essential information to include**:
+  - **What changed**: Specific files, functions, or features modified
+  - **Why changed**: Business logic, bug fix, or improvement reason
+  - **Impact scope**: Which workflows or components are affected
+  - **Technical details**: Implementation approach or algorithm changes
+- **Examples of good commit messages**:
+  - `fix: pdfGenerator.js coordinate validation - Add variable scope management for currentY tracking and coordinate validation before jsPDF.addImage calls to prevent invalid coordinates error in words meanings section`
+  - `feat: canvas sizing algorithm - Implement dynamic text measurement-based canvas sizing using measureText API and actualBoundingBox metrics to prevent Arabic text clipping across all PDF generation components`
+  - `refactor: verse selection state - Optimize dual-array state management in page.js by consolidating selectedVerses and secondRowSelectedVerses toggle handlers for better maintainability`
+- **Use available commit tools**:
+  - `npm run bismillah "detailed message"` - Quick commit with Islamic formatting
+  - `npm run commit` - Interactive commit helper with guidance
+  - `git commit` - Automatic Islamic formatting via Git hooks
+
 ## Project-Specific Conventions
 
 ### Selection UI Pattern
