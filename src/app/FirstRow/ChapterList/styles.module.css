@@ -39,7 +39,10 @@
   
   .toggleButton {
     flex-shrink: 0;
-    margin-left: 8px;
+    margin-left: 12px;
+    width: 36px;
+    height: 36px;
+    font-size: 12px;
   }
 }
 
@@ -93,21 +96,25 @@
   background: #333;
   border: none;
   color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 8px;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 12px;
-  min-width: 32px;
-  min-height: 32px;
+  font-size: 14px;
+  font-weight: bold;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .toggleButton:hover {
   background: #555;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .content {
@@ -158,20 +165,27 @@
 /* Additional mobile responsive adjustments */
 @media (max-width: 767px) {
   .header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
+    align-items: center;
+    min-height: 36px;
+  }
+  
+  .headerTitle {
+    flex: 1;
+    min-width: 0;
   }
   
   .selectedInfo {
     font-size: 0.8rem;
-    white-space: normal;
-    overflow: visible;
-    text-overflow: unset;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   
   .toggleButton {
-    align-self: flex-end;
-    margin-top: -32px;
+    flex-shrink: 0;
+    margin-left: 12px;
+    width: 36px;
+    height: 36px;
+    font-size: 12px;
   }
 }

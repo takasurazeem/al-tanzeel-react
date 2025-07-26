@@ -36,22 +36,25 @@
   background: #333;
   border: none;
   color: white;
-  padding: 6px 10px;
-  border-radius: 4px;
+  padding: 8px;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 12px;
-  min-width: 36px;
-  min-height: 36px;
+  font-size: 14px;
+  font-weight: bold;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: background-color 0.2s;
-  font-weight: bold;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .toggleButton:hover {
   background: #555;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .content {
@@ -96,7 +99,10 @@
   
   .toggleButton {
     flex-shrink: 0;
-    margin-left: 8px;
+    margin-left: 12px;
+    width: 36px;
+    height: 36px;
+    font-size: 12px;
   }
 }
 
