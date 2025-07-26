@@ -10,7 +10,7 @@ import {
   isValidHijriDate 
 } from '../../utils/hijriCalendar';
 
-export const Sidebar = ({ onPreferencesChange }) => {
+export const Sidebar = ({ onPreferencesChange, fontSize, onFontSizeChange }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState({
     className: '',
@@ -231,6 +231,27 @@ export const Sidebar = ({ onPreferencesChange }) => {
                 placeholder="Enter masjid name"
                 autoComplete="off"
               />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>Font Size</label>
+              <div className={styles.fontControls}>
+                <button 
+                  type="button"
+                  onClick={() => onFontSizeChange(prev => Math.max(12, prev - 2))}
+                  className={styles.fontButton}
+                >
+                  A-
+                </button>
+                <span className={styles.fontSizeDisplay}>{fontSize}px</span>
+                <button 
+                  type="button"
+                  onClick={() => onFontSizeChange(prev => Math.min(48, prev + 2))}
+                  className={styles.fontButton}
+                >
+                  A+
+                </button>
+              </div>
             </div>
 
             <div className={styles.formGroup}>

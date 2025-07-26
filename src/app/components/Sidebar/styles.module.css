@@ -396,3 +396,41 @@
   font-weight: 500;
   margin-top: 4px;
 }
+
+/* Font Controls */
+.fontControls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.fontButton {
+  background: #333;
+  border: none;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  min-width: 40px;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.fontButton:hover {
+  background: #444;
+  transform: translateY(-1px);
+}
+
+.fontSizeDisplay {
+  color: white;
+  min-width: 50px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+}

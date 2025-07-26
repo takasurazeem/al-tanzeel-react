@@ -326,55 +326,6 @@
   }
 }
 
-.fontControls {
-  display: flex;
-  gap: 8px; /* Reduced gap on mobile */
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.fontControls button {
-  background: #333;
-  border: none;
-  color: white;
-  padding: 4px 8px; /* Smaller padding on mobile */
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px; /* Smaller font on mobile */
-  min-height: 44px; /* Ensure proper touch target on mobile */
-  min-width: 44px; /* Ensure proper touch target on mobile */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.fontControls span {
-  color: white;
-  min-width: 35px; /* Smaller min-width on mobile */
-  text-align: center;
-  font-size: 12px; /* Smaller font on mobile */
-}
-
-/* Desktop styles */
-@media (min-width: 768px) {
-  .fontControls {
-    gap: 10px;
-    flex-wrap: nowrap;
-  }
-  
-  .fontControls button {
-    padding: 5px 10px;
-    font-size: 14px;
-    min-height: auto;
-    min-width: auto;
-  }
-  
-  .fontControls span {
-    min-width: 40px;
-    font-size: 14px;
-  }
-}
-
 .topControls {
   width: 100%;
   display: flex;

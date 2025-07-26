@@ -136,7 +136,11 @@ export default function Home() {
 
   return (
     <div className={styles.container}>
-      <Sidebar onPreferencesChange={setPreferences} />
+      <Sidebar 
+        onPreferencesChange={setPreferences} 
+        fontSize={fontSize}
+        onFontSizeChange={setFontSize}
+      />
       <div className={styles.topControls}>
         <div className={styles.leftControls}>
           <button 
@@ -153,11 +157,6 @@ export default function Home() {
           </button>
         </div>
         <h2 className={styles.rowTitle}>Verses for Translation</h2>
-        <div className={styles.fontControls}>
-          <button onClick={() => setFontSize(prev => Math.max(12, prev - 2))}>A-</button>
-          <span>{fontSize}px</span>
-          <button onClick={() => setFontSize(prev => Math.min(48, prev + 2))}>A+</button>
-        </div>
       </div>
       {/* First Row - Remove duplicate title */}
       <div className={styles.grid}>
