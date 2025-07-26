@@ -350,8 +350,8 @@
   background: #d32f2f;
   border: none;
   color: white;
-  padding: 0 12px; /* Smaller padding on mobile */
-  height: 36px; /* Smaller height on mobile */
+  padding: 0 16px; /* Consistent padding */
+  height: 32px; /* Reduced height on mobile */
   border-radius: 6px;
   cursor: pointer;
   font-size: 12px; /* Smaller font on mobile */
@@ -360,6 +360,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 80px; /* Ensure minimum consistent width */
 }
 
 .resetButton:hover {
@@ -371,9 +372,10 @@
 /* Desktop styles */
 @media (min-width: 768px) {
   .resetButton {
-    padding: 0 16px;
+    padding: 0 20px;
     height: 40px;
     font-size: 14px;
+    min-width: 100px;
   }
 }
 
@@ -388,8 +390,8 @@
   background: #2e7d32;
   border: none;
   color: white;
-  padding: 0 12px; /* Smaller padding on mobile */
-  height: 36px; /* Smaller height on mobile */
+  padding: 0 16px; /* Consistent padding */
+  height: 32px; /* Reduced height on mobile */
   border-radius: 6px;
   cursor: pointer;
   font-size: 12px; /* Smaller font on mobile */
@@ -398,6 +400,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 120px; /* Slightly wider for "Generate PDF" text */
 }
 
 .pdfButton:hover {
@@ -409,17 +412,22 @@
 /* Desktop styles */
 @media (min-width: 768px) {
   .pdfButton {
-    padding: 0 16px;
+    padding: 0 20px;
     height: 40px;
     font-size: 14px;
+    min-width: 140px;
   }
 }
 
 /* Global mobile optimizations */
 @media (max-width: 767px) {
   /* Better tap targets for specific button classes */
-  .resetButton, .pdfButton, .removeButton, .chapterItem, .verseItem {
-    min-height: 44px;
+  .resetButton, .pdfButton, .removeButton {
+    min-height: 32px; /* Consistent with our new button heights */
+  }
+  
+  .chapterItem, .verseItem {
+    min-height: 44px; /* Keep larger touch targets for list items */
   }
   
   /* Prevent text selection on interactive elements */
