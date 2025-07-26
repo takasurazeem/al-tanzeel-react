@@ -244,7 +244,7 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
       const nameFieldHeight = 12; // Approximate height of name/date row
       
       let currentY = nameFieldY + nameFieldHeight + 8; // Start after name/date fields with gap
-      const lineHeight = 4; // Very tight line spacing
+      const lineHeight = 8; // Notebook-style line spacing for better writing experience
       const verseSpacing = 8; // Minimal verse spacing
       const verseWidth = pageWidth - 20; // Wider text area
       
@@ -441,7 +441,7 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
         pdf.setLineWidth(0.5); // Thicker lines
         
         for (let lineIndex = 0; lineIndex < 2; lineIndex++) { // 2 lines per word
-          currentY += 4; // Reduced line spacing
+          currentY += 8; // Notebook-style line spacing for better writing experience
           // Draw lines under each word position
           rowWords.forEach((word, colIndex) => {
             const wordWidth = (pageWidth - 30) / wordsPerRow; // Reduced margins
