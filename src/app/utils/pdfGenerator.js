@@ -305,6 +305,8 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
     }
 
     // Add selected verses for translation below the main verse
+    let currentY; // Declare currentY at a higher scope so it's available for words section
+    
     if (selectedVerses && selectedVerses.length > 0) {
       console.log(`Adding ${selectedVerses.length} selected verses for translation`);
       
@@ -315,7 +317,7 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
       const nameFieldY = urduY + urduImgHeight + 8;
       const nameFieldHeight = 12; // Approximate height of name/date row
       
-      let currentY = nameFieldY + nameFieldHeight + 8; // Start after name/date fields with gap
+      currentY = nameFieldY + nameFieldHeight + 8; // Start after name/date fields with gap
       const lineHeight = 8; // Notebook-style line spacing for better writing experience
       const verseSpacing = 8; // Minimal verse spacing
       const verseWidth = pageWidth - 20; // Wider text area
@@ -536,23 +538,32 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
       
       // Add minimal space before word meanings section
       currentY += 10;
+    } else {
+      // If no verses, initialize currentY for words section
+      const urduImgWidth = pageWidth * 0.6;
+      const urduImgHeight = (urduCanvas.height * urduImgWidth) / urduCanvas.width;
+      const urduY = y + imgHeight;
+      const nameFieldY = urduY + urduImgHeight + 8;
+      const nameFieldHeight = 12;
+      currentY = nameFieldY + nameFieldHeight + 20; // Start after name/date fields with more gap
     }
 
     // Add selected words for meanings below the verses in simple grid layout
     if (selectedWords && selectedWords.length > 0) {
       console.log(`Adding ${selectedWords.length} selected words for meanings in clean grid layout`);
       
-      let currentY = selectedVerses.length > 0 ? (y + imgHeight + 10) : (y + imgHeight + 10);
-      
-      // Calculate starting position after verses if verses exist
+      // Use the currentY from verses section or initialize if no verses
       if (selectedVerses && selectedVerses.length > 0) {
-        // Skip calculation, currentY will be set from verses section
-        // Find where verses section ended
-        let estimatedY = y + imgHeight + 10;
-        selectedVerses.forEach((verse) => {
-          estimatedY += 60; // Approximate height per verse with lines
-        });
-        currentY = estimatedY + 20;
+        // currentY is already set from the verses loop above
+        console.log('Words will start after verses at currentY:', currentY);
+      } else {
+        // If no verses, initialize currentY for words section
+        const urduImgWidth = pageWidth * 0.6;
+        const urduImgHeight = (urduCanvas.height * urduImgWidth) / urduCanvas.width;
+        const urduY = y + imgHeight;
+        const nameFieldY = urduY + urduImgHeight + 8;
+        const nameFieldHeight = 12;
+        currentY = nameFieldY + nameFieldHeight + 20; // Start after name/date fields with more gap
       }
       
       // Simple 4-column layout: Meaning | Word | Meaning | Word
@@ -563,6 +574,37 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
       const wordRowHeight = (baseFontSize * 1.05) * 0.3528; // Much tighter - reduced from 1.2 to 1.05
       const meaningRowHeight = 10; // Reduced height for meaning lines section
       const rowSpacing = 0.5; // Even more minimal space between word-meaning pairs
+      
+      // Calculate total height needed for all words to determine if we need a new page
+      const totalWordsRows = Math.ceil(selectedWords.length / wordsPerRow);
+      const estimatedWordsHeight = totalWordsRows * (wordRowHeight + meaningRowHeight + rowSpacing) + 20; // Extra margin
+      
+      // Check if words section can fit on current page
+      const availableSpace = pageHeight - borderMargin - 5 - currentY; // Space available from currentY to page bottom
+      
+      console.log('Words section space check:', {
+        currentY: currentY,
+        availableSpace: availableSpace,
+        estimatedWordsHeight: estimatedWordsHeight,
+        pageHeight: pageHeight,
+        borderMargin: borderMargin
+      });
+      
+      if (estimatedWordsHeight > availableSpace) {
+        console.log(`Words section needs ${estimatedWordsHeight}mm but only ${availableSpace}mm available. Starting new page.`);
+        pdf.addPage();
+        currentY = borderMargin + 15; // Start after border with some margin
+        
+        // Redraw border on new page
+        pdf.setDrawColor(60, 60, 60);
+        pdf.setLineWidth(1.0);
+        pdf.setLineDashPattern([], 0);
+        pdf.rect(borderMargin, borderMargin, pageWidth - 2 * borderMargin, pageHeight - 2 * borderMargin);
+      } else {
+        console.log(`Words section fits on current page. Available: ${availableSpace}mm, Needed: ${estimatedWordsHeight}mm`);
+        // Add some spacing from the last verse's translation lines
+        currentY += 15;
+      }
       
       // Function to create word canvas for clean grid
       const createWordCanvas = (word) => {
@@ -612,6 +654,12 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
       
       // Process words in pairs (2 words per row for clean 4-column layout)
       for (let i = 0; i < selectedWords.length; i += wordsPerRow) {
+        // Validate currentY before processing each row
+        if (isNaN(currentY) || currentY < 0) {
+          console.error('Invalid currentY before word row processing:', currentY);
+          currentY = borderMargin + 20; // Reset to safe value
+        }
+        
         // Check if we need a new page
         if (currentY > pageHeight - 120) {
           pdf.addPage();
@@ -625,6 +673,7 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
         }
         
         const rowWords = selectedWords.slice(i, i + wordsPerRow);
+        console.log(`Processing word row ${i / wordsPerRow + 1}, words:`, rowWords, 'at currentY:', currentY);
         
         // Add words in their respective columns
         rowWords.forEach((word, wordIndex) => {
@@ -634,12 +683,26 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
           const isEvenIndex = totalWordIndex % 2 === 0;
           const wordColumnIndex = isEvenIndex ? 3 : 1; // Even indices go to column 3 (rightmost), odd indices go to column 1
           
-          // Add word in its column
+          // Add word in its column with coordinate validation
           const wordCanvas = createWordCanvas(word);
           const wordImgData = wordCanvas.toDataURL('image/png', 1.0);
           const wordImgWidth = columnWidth - 2; // Very minimal margin for maximum tightness
           const wordImgHeight = (wordCanvas.height * wordImgWidth) / wordCanvas.width;
           const wordXPos = 20 + (wordColumnIndex * columnWidth); // Centered positioning with equal margins
+          
+          // Validate coordinates before adding image
+          if (isNaN(wordXPos) || isNaN(currentY) || isNaN(wordImgWidth) || isNaN(wordImgHeight)) {
+            console.error('Invalid coordinates for word image:', {
+              wordXPos: wordXPos,
+              currentY: currentY,
+              wordImgWidth: wordImgWidth,
+              wordImgHeight: wordImgHeight,
+              word: word,
+              wordIndex: wordIndex,
+              totalWordIndex: totalWordIndex
+            });
+            return; // Skip this word if coordinates are invalid
+          }
           
           pdf.addImage(wordImgData, 'PNG', wordXPos, currentY, wordImgWidth, wordImgHeight, undefined, 'FAST');
         });
