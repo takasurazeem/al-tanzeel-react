@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "commit": "./commit.sh",
-    "commit:msg": "./commit.sh"
+    "bismillah": "./commit.sh"
   },
   "dependencies": {
     "@fontsource/amiri": "^5.2.5",

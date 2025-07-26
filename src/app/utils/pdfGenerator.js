@@ -29,10 +29,28 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
     // Using 3.78 pixels per mm (96 DPI conversion)
     const canvasWidthFactor = selectedPageSize.width * 3.78 * 2.5; // Scale factor for high quality
     
-    // Create canvas for Quran verse with dynamic width
+    // Create canvas for Quran verse with dynamic width and height based on text measurement
     const canvas = document.createElement('canvas');
     canvas.width = canvasWidthFactor;
-    canvas.height = 400; // Keep height proportional
+    
+    // Calculate dynamic height based on actual text measurement
+    const baseFontSize = 120;
+    
+    // Create temporary canvas to measure text dimensions
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCtx.font = `${baseFontSize}px "QuranFont", "Noto Sans Arabic", Arial, sans-serif`;
+    tempCtx.direction = 'rtl';
+    
+    // Measure the actual text
+    const textMetrics = tempCtx.measureText(firstVerse);
+    const textWidth = textMetrics.width;
+    const textHeight = textMetrics.actualBoundingBoxAscent + textMetrics.actualBoundingBoxDescent;
+    
+    // Calculate canvas height with generous padding to prevent any clipping
+    const textPadding = Math.max(120, textHeight * 0.8); // Adaptive padding based on text height
+    canvas.height = Math.max((baseFontSize * 2) + textPadding, textHeight + textPadding); // Ensure minimum height
+    
     const ctx = canvas.getContext('2d', { alpha: false });
     
     // Enable high-quality rendering
@@ -43,22 +61,40 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
     ctx.fillStyle = 'white';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Load font for PDF
+    // Load font for PDF and ensure it's ready
     const fontStack = '"QuranFont", "Noto Sans Arabic", Arial, sans-serif';
-    const fontSize = '120px';
+    const fontSize = `${baseFontSize}px`;
     
-    // Wait for font to load
-    await document.fonts.load(`${fontSize} ${fontStack}`);
+    // Wait for font to load with multiple attempts
+    try {
+      await document.fonts.load(`${fontSize} ${fontStack}`);
+      // Small delay to ensure font is fully loaded
+      await new Promise(resolve => setTimeout(resolve, 100));
+    } catch (error) {
+      console.warn('Font loading failed, continuing with fallback:', error);
+    }
     
-    // Configure text style for Arabic
+    // Configure text style for Arabic with precise alignment
     ctx.fillStyle = 'black';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.font = `${fontSize} ${fontStack}`;
     ctx.direction = 'rtl';
     
-    // Draw the Arabic text
-    ctx.fillText(firstVerse, canvas.width / 2, canvas.height / 2);
+    // Draw the Arabic text with verified positioning
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    ctx.fillText(firstVerse, centerX, centerY);
+    
+    // Debug: Log canvas dimensions and text metrics
+    console.log('Main verse canvas dimensions:', {
+      width: canvas.width,
+      height: canvas.height,
+      textWidth: textWidth,
+      textHeight: textHeight,
+      fontSize: baseFontSize,
+      padding: textPadding
+    });
     
     // Create PDF with specified page size
     const pdf = new jsPDF({
@@ -97,7 +133,12 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
     const urduTestText = 'سلسلہ وار ٹیسٹ';
     const urduCanvas = document.createElement('canvas');
     urduCanvas.width = 1500;
-    urduCanvas.height = 80; // Reduced from 120 to 80 to minimize padding
+    
+    // Calculate dynamic height based on font size and content
+    const urduFontSize = 60;
+    const urduTextPadding = 40; // Increased padding to prevent clipping
+    urduCanvas.height = (urduFontSize * 1.5) + urduTextPadding; // 1.5x font size + padding for proper spacing
+    
     const urduCtx = urduCanvas.getContext('2d', { alpha: false });
     
     // Enable high-quality rendering
@@ -108,15 +149,15 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
     urduCtx.fillStyle = 'white';
     urduCtx.fillRect(0, 0, urduCanvas.width, urduCanvas.height);
     
-    // Configure text style for Urdu
+    // Configure text style for Urdu with proper baseline
     urduCtx.fillStyle = 'black';
     urduCtx.textAlign = 'center';
-    urduCtx.textBaseline = 'top'; // Changed from 'middle' to 'top' to reduce top padding
+    urduCtx.textBaseline = 'middle'; // Use middle for proper centering
     urduCtx.font = '60px "QuranFont", "Noto Sans Arabic", Arial, sans-serif';
     urduCtx.direction = 'rtl';
     
-    // Draw the Urdu text closer to top
-    urduCtx.fillText(urduTestText, urduCanvas.width / 2, 5); // Start at y=5 instead of middle
+    // Draw the Urdu text with proper positioning
+    urduCtx.fillText(urduTestText, urduCanvas.width / 2, (urduCanvas.height / 2));
     
     // Add Urdu text canvas to PDF
     const urduImgData = urduCanvas.toDataURL('image/png', 1.0);
@@ -134,8 +175,13 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
     
     // Create date field (left side) - "بتاریخ:"
     const dateFieldCanvas = document.createElement('canvas');
-    dateFieldCanvas.width = 1200; // Increased width to match name field
-    dateFieldCanvas.height = 120; // Increased height to match header fields
+    dateFieldCanvas.width = 1200;
+    
+    // Calculate dynamic height based on font size
+    const dateFieldFontSize = 60;
+    const dateFieldPadding = 60; // Increased padding to prevent clipping
+    dateFieldCanvas.height = (dateFieldFontSize * 1.5) + dateFieldPadding; // 1.5x font size + padding for proper spacing
+    
     const dateFieldCtx = dateFieldCanvas.getContext('2d', { alpha: false });
     
     // Configure date field canvas
@@ -156,10 +202,15 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
     const dateFieldHeight = (dateFieldCanvas.height * dateFieldWidth) / dateFieldCanvas.width;
     pdf.addImage(dateFieldImgData, 'PNG', 10, nameFieldY, dateFieldWidth, dateFieldHeight, undefined, 'FAST');
     
-    // Create student name field (right side) - "نام طالب علم:" - SAME SIZE AS HEADERS
+    // Create student name field (right side) - "نام طالب علم:" with dynamic height
     const nameFieldCanvas = document.createElement('canvas');
-    nameFieldCanvas.width = 1200; // Same as date field
-    nameFieldCanvas.height = 120; // Increased to match header fields and date field
+    nameFieldCanvas.width = 1200;
+    
+    // Calculate dynamic height based on font size (same as date field)
+    const nameFieldFontSize = 60;
+    const nameFieldPadding = 60; // Increased padding to prevent clipping
+    nameFieldCanvas.height = (nameFieldFontSize * 1.5) + nameFieldPadding; // 1.5x font size + padding matching date field
+    
     const nameFieldCtx = nameFieldCanvas.getContext('2d', { alpha: false });
     
     // Configure name field canvas
@@ -192,13 +243,18 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
     console.log('Masjid name:', preferences.masjidName);
     console.log('Class name:', preferences.className);
     
-    // Function to create text canvas
+    // Function to create text canvas with dynamic sizing
     const createTextCanvas = (text, textAlign = 'right') => {
       if (!text || text.trim() === '') return null;
       
       const textCanvas = document.createElement('canvas');
-      textCanvas.width = 1200; // Increased width for larger text
-      textCanvas.height = 150; // Increased height
+      textCanvas.width = 1200;
+      
+      // Calculate dynamic height based on font size and content
+      const headerFontSize = 90;
+      const headerPadding = 80; // Increased padding to prevent clipping of large text
+      textCanvas.height = (headerFontSize * 1.5) + headerPadding; // 1.5x font size + padding for proper spacing
+      
       const textCtx = textCanvas.getContext('2d', { alpha: false });
       
       // Enable high-quality rendering
@@ -254,7 +310,7 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
       
       // Calculate position after Urdu text and name/date fields
       const urduImgWidth = pageWidth * 0.6;
-      const urduImgHeight = (80 * urduImgWidth) / 1500; // Updated to use new canvas height
+      const urduImgHeight = (urduCanvas.height * urduImgWidth) / urduCanvas.width; // Use actual canvas height
       const urduY = y + imgHeight; // No gap - directly touching Bismillah
       const nameFieldY = urduY + urduImgHeight + 8;
       const nameFieldHeight = 12; // Approximate height of name/date row
@@ -409,10 +465,15 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
           const arabicImgHeight = (arabicCanvas.height * arabicImgWidth) / arabicCanvas.width;
           pdf.addImage(arabicImgData, 'PNG', 15, currentY, arabicImgWidth, arabicImgHeight, undefined, 'FAST');
           
-          // Use reference mark (※) with canvas rendering and QuranFont
+          // Use reference mark (※) with canvas rendering and QuranFont with dynamic sizing
           const markerCanvas = document.createElement('canvas');
-          markerCanvas.width = 120; // Smaller width to prevent border overlap
-          markerCanvas.height = 60; // Smaller height
+          
+          // Calculate dynamic dimensions based on font size
+          const markerFontSize = 36;
+          const markerPadding = 30; // Increased padding around the marker to prevent clipping
+          markerCanvas.width = (markerFontSize * 1.5) + markerPadding; // 1.5x font size + padding
+          markerCanvas.height = (markerFontSize * 1.5) + markerPadding; // 1.5x font size + padding
+          
           const markerCtx = markerCanvas.getContext('2d', { alpha: false });
           
           // Configure marker canvas
@@ -423,7 +484,7 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
           markerCtx.fillStyle = 'black';
           markerCtx.textAlign = 'center';
           markerCtx.textBaseline = 'middle';
-          markerCtx.font = '36px "QuranFont", "Noto Sans Arabic", Arial, sans-serif'; // Match verse font size ratio
+          markerCtx.font = `${markerFontSize}px "QuranFont", "Noto Sans Arabic", Arial, sans-serif`; // Use calculated font size
           markerCtx.direction = 'rtl';
           
           // Use reference mark
