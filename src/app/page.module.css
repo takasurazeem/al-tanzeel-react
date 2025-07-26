@@ -11,15 +11,23 @@
 }
 
 .container {
-  width: 90%;
+  width: 95%; /* Slightly wider on mobile */
   margin: 0 auto;
-  padding: 20px;
+  padding: 10px; /* Reduced padding on mobile */
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
   background-color: #000;
+}
+
+/* Desktop styles */
+@media (min-width: 768px) {
+  .container {
+    width: 90%;
+    padding: 20px;
+  }
 }
 
 .main {
@@ -40,31 +48,103 @@
 
 .grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr; /* Three equal columns */
   gap: 20px;
   padding: 20px;
   width: 100%;
-  /* Fixed height for better control */
-  height: calc((100vh - 180px) / 2);
+  /* Mobile-first: single column layout */
+  grid-template-columns: 1fr;
+  height: auto;
+}
+
+/* Add spacing between sections on mobile */
+@media (max-width: 767px) {
+  .grid {
+    padding: 10px;
+    gap: 15px;
+  }
+  
+  .grid + .grid {
+    margin-top: 30px;
+    padding-top: 30px;
+    border-top: 2px solid #333;
+  }
 }
 
 .column {
   background: #f5f5f5;
   border-radius: 8px;
   padding: 16px;
-  min-height: 100px; /* Ensure visible height for empty columns */
+  min-height: 300px; /* Increased min-height for mobile */
   overflow: hidden;
-  min-width: 200px; /* Prevents columns from getting too narrow */
+  position: relative;
+}
+
+/* Mobile-specific styles for columns */
+@media (max-width: 767px) {
+  .column {
+    margin-bottom: 20px;
+    /* Add border for better separation on mobile */
+    border: 1px solid #ddd;
+  }
+  
+  .column:last-child {
+    margin-bottom: 0;
+  }
+}
+
+/* Tablet and larger screens: 3-column layout */
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr 1fr 1fr;
+    height: calc((100vh - 180px) / 2);
+  }
+  
+  .column {
+    min-height: 100px;
+    min-width: 200px;
+    margin-bottom: 0;
+    border: none;
+  }
+}
+
+/* Small tablet / landscape phone: 2-column layout */
+@media (min-width: 480px) and (max-width: 767px) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+    height: auto;
+  }
+  
+  .column {
+    min-height: 250px;
+  }
 }
 
 .searchInput {
   width: 100%;
-  padding: 8px;
+  padding: 12px; /* Increased padding for better touch targets */
   margin-bottom: 16px;
   border: 1px solid #ddd;
   border-radius: 4px;
   color: #000;
   background: white;
+  font-size: 16px; /* Prevent zoom on iOS */
+  /* Better mobile interaction */
+  appearance: none;
+  -webkit-appearance: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.searchInput:focus {
+  outline: 2px solid #007acc;
+  outline-offset: 2px;
+}
+
+/* Desktop styles */
+@media (min-width: 768px) {
+  .searchInput {
+    padding: 8px;
+    font-size: 14px;
+  }
 }
 
 .chapterList {
@@ -73,18 +153,36 @@
   background: #333;
   border-radius: 4px;
   padding: 8px;
+  /* Better mobile scrolling */
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
 }
 
 .chapterItem {
-  padding: 8px;
+  padding: 12px; /* Increased padding for better touch targets */
   border-bottom: 1px solid #444;
   cursor: pointer;
   color: #fff;
   font-size: 16px;
+  min-height: 44px; /* Minimum touch target size */
+  display: flex;
+  align-items: center;
+  /* Better mobile touch interaction */
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
-.chapterItem:hover {
+.chapterItem:hover,
+.chapterItem:active {
   background: #444;
+}
+
+/* Desktop styles */
+@media (min-width: 768px) {
+  .chapterItem {
+    padding: 8px;
+    min-height: auto;
+  }
 }
 
 .selected {
@@ -95,7 +193,7 @@
   display: flex;
   align-items: flex-start; /* Changed from center to flex-start for better wrapping */
   gap: 10px;
-  padding: 8px;
+  padding: 12px; /* Increased padding for better touch targets */
   color: #fff;
   direction: rtl;
   text-align: right;
@@ -104,14 +202,26 @@
   transition: background-color 0.2s;
   word-wrap: break-word;
   line-height: 1.4;
-  min-height: fit-content;
+  min-height: 44px; /* Minimum touch target size */
   overflow-wrap: break-word;
   hyphens: auto;
+  /* Better mobile touch interaction */
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
-.verseItem:hover {
+.verseItem:hover,
+.verseItem:active {
   background: #444;
   border-radius: 4px;
+}
+
+/* Desktop styles */
+@media (min-width: 768px) {
+  .verseItem {
+    padding: 8px;
+    min-height: fit-content;
+  }
 }
 
 .verseList {
@@ -122,6 +232,9 @@
   padding: 8px;
   direction: rtl;
   font-family: 'QuranFont', Arial, sans-serif;
+  /* Better mobile scrolling */
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
 }
 
 .selectedVerse {
@@ -146,6 +259,9 @@
   font-size: inherit; /* Inherit font size from parent */
   height: calc(100% - 60px); /* Account for title and search input */
   overflow-y: auto;
+  /* Better mobile scrolling */
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
 }
 
 .selectedVerseItem {
@@ -187,32 +303,70 @@
 }
 
 .rowTitle {
-  font-size: 1.5rem;
+  font-size: 1.2rem; /* Smaller on mobile */
   font-weight: bold;
   color: #fff;
-  margin: 0; /* Remove margin since it's now in topControls */
-  height: 40px;
+  margin: 0;
+  height: auto;
+  text-align: center;
+}
+
+/* Desktop styles */
+@media (min-width: 768px) {
+  .rowTitle {
+    font-size: 1.5rem;
+    height: 40px;
+    text-align: left;
+  }
 }
 
 .fontControls {
   display: flex;
-  gap: 10px;
+  gap: 8px; /* Reduced gap on mobile */
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .fontControls button {
   background: #333;
   border: none;
   color: white;
-  padding: 5px 10px;
+  padding: 4px 8px; /* Smaller padding on mobile */
   border-radius: 4px;
   cursor: pointer;
+  font-size: 12px; /* Smaller font on mobile */
+  min-height: 44px; /* Ensure proper touch target on mobile */
+  min-width: 44px; /* Ensure proper touch target on mobile */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .fontControls span {
   color: white;
-  min-width: 40px;
+  min-width: 35px; /* Smaller min-width on mobile */
   text-align: center;
+  font-size: 12px; /* Smaller font on mobile */
+}
+
+/* Desktop styles */
+@media (min-width: 768px) {
+  .fontControls {
+    gap: 10px;
+    flex-wrap: nowrap;
+  }
+  
+  .fontControls button {
+    padding: 5px 10px;
+    font-size: 14px;
+    min-height: auto;
+    min-width: auto;
+  }
+  
+  .fontControls span {
+    min-width: 40px;
+    font-size: 14px;
+  }
 }
 
 .topControls {
@@ -220,20 +374,33 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 20px;
-  height: 60px;
+  padding: 0 10px; /* Reduced padding on mobile */
+  height: auto; /* Allow flexible height on mobile */
+  min-height: 60px;
   background-color: transparent;
+  flex-wrap: wrap; /* Allow wrapping on very small screens */
+  gap: 10px;
+}
+
+/* Desktop styles */
+@media (min-width: 768px) {
+  .topControls {
+    padding: 0 20px;
+    height: 60px;
+    flex-wrap: nowrap;
+    gap: 0;
+  }
 }
 
 .resetButton {
   background: #d32f2f;
   border: none;
   color: white;
-  padding: 0 16px;
-  height: 40px;
+  padding: 0 12px; /* Smaller padding on mobile */
+  height: 36px; /* Smaller height on mobile */
   border-radius: 6px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 12px; /* Smaller font on mobile */
   font-weight: 500;
   transition: all 0.2s ease;
   display: flex;
@@ -247,6 +414,15 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
+/* Desktop styles */
+@media (min-width: 768px) {
+  .resetButton {
+    padding: 0 16px;
+    height: 40px;
+    font-size: 14px;
+  }
+}
+
 .leftControls {
   display: flex;
   gap: 10px;
@@ -257,11 +433,11 @@
   background: #2e7d32;
   border: none;
   color: white;
-  padding: 0 16px;
-  height: 40px;
+  padding: 0 12px; /* Smaller padding on mobile */
+  height: 36px; /* Smaller height on mobile */
   border-radius: 6px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 12px; /* Smaller font on mobile */
   font-weight: 500;
   transition: all 0.2s ease;
   display: flex;
@@ -273,4 +449,45 @@
   background: #1b5e20;
   transform: translateY(-1px);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Desktop styles */
+@media (min-width: 768px) {
+  .pdfButton {
+    padding: 0 16px;
+    height: 40px;
+    font-size: 14px;
+  }
+}
+
+/* Global mobile optimizations */
+@media (max-width: 767px) {
+  /* Better tap targets for specific button classes */
+  .resetButton, .pdfButton, .removeButton, .chapterItem, .verseItem {
+    min-height: 44px;
+  }
+  
+  /* Prevent text selection on interactive elements */
+  .chapterItem, .verseItem, .columnTitle, .rowTitle {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  
+  /* Hide scrollbars on mobile for cleaner look */
+  .chapterList::-webkit-scrollbar,
+  .verseList::-webkit-scrollbar,
+  .selectedVersesList::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .chapterList,
+  .verseList,
+  .selectedVersesList {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    /* Improve touch scrolling performance */
+    -webkit-overflow-scrolling: touch;
+  }
 }
