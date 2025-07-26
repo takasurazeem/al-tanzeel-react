@@ -398,7 +398,7 @@
   width: 32px; /* Match the height of other buttons on mobile */
   height: 32px;
   border: none;
-  background: #1a1a1a; /* Dark theme background */
+  background: #ffffff; /* White background */
   border-radius: 6px; /* Match other button border radius */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   cursor: pointer;
@@ -419,7 +419,7 @@
   position: relative;
   width: 16px; /* Smaller for mobile */
   height: 2px;
-  background: #ffffff;
+  background: #000000; /* Black lines */
   transition: all 0.3s ease;
 }
 
@@ -427,9 +427,10 @@
 .menuIcon::after {
   content: '';
   position: absolute;
+  left: 0; /* Align with parent left edge */
   width: 16px; /* Smaller for mobile */
   height: 2px;
-  background: #ffffff;
+  background: #000000; /* Black lines */
   transition: all 0.3s ease;
 }
 
