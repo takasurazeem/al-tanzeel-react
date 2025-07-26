@@ -41,7 +41,7 @@ export const ChapterList = ({ chapters, selectedChapter, onChapterSelect, search
           <h3 className={sharedStyles.columnTitle}>Select Surah</h3>
           {selectedChapter && (
             <span className={styles.selectedInfo}>
-              {selectedChapter.id}. {selectedChapter.transliteration}
+              {selectedChapter.id}. {selectedChapter.name} ({selectedChapter.transliteration})
             </span>
           )}
         </div>
@@ -60,7 +60,7 @@ export const ChapterList = ({ chapters, selectedChapter, onChapterSelect, search
       <div className={`${styles.content} ${isCollapsed && isMobile ? styles.contentCollapsed : ''}`}>
         <input
           type="text"
-          placeholder="Search by ID or name..."
+          placeholder="Search by Surah number or name"
           value={searchTerm}
           onChange={onSearchChange}
           className={styles.searchInput}
@@ -72,7 +72,13 @@ export const ChapterList = ({ chapters, selectedChapter, onChapterSelect, search
               className={`${styles.chapterItem} ${selectedChapter?.id === chapter.id ? styles.selected : ''}`}
               onClick={() => handleChapterSelect(chapter)}
             >
-              {chapter.id}. {chapter.transliteration}
+              <div className={styles.chapterInfo}>
+                <div className={styles.chapterNumber}>{chapter.id}.</div>
+                <div className={styles.chapterNames}>
+                  <div className={styles.arabicName}>{chapter.name}</div>
+                  <div className={styles.transliterationName}>{chapter.transliteration}</div>
+                </div>
+              </div>
             </div>
           ))}
         </div>
