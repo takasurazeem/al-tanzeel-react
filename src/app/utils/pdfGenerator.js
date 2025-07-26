@@ -357,9 +357,9 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
       currentY += 10;
     }
 
-    // Add selected words for meanings below the verses
+    // Add selected words for meanings below the verses in simple grid layout
     if (selectedWords && selectedWords.length > 0) {
-      console.log(`Adding ${selectedWords.length} selected words for meanings`);
+      console.log(`Adding ${selectedWords.length} selected words for meanings in clean grid layout`);
       
       let currentY = selectedVerses.length > 0 ? (y + imgHeight + 10) : (y + imgHeight + 10);
       
@@ -374,15 +374,38 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
         currentY = estimatedY + 20;
       }
       
-      const wordsPerRow = 3; // 3 words per row like in screenshot
-      const wordHeight = 30; // Increased height for bigger words
-      const wordSpacing = 6; // Reduced spacing between word rows
+      // Simple 4-column layout: Meaning | Word | Meaning | Word
+      const columnsPerRow = 4;
+      const wordsPerRow = 2; // 2 words per row
+      const columnWidth = (pageWidth - 40) / columnsPerRow; // Smaller columns for tighter spacing
+      const baseFontSize = 56; // Reduced from 60px to 56px (4 points smaller)
+      const wordRowHeight = (baseFontSize * 1.05) * 0.3528; // Much tighter - reduced from 1.2 to 1.05
+      const meaningRowHeight = 10; // Reduced height for meaning lines section
+      const rowSpacing = 0.5; // Even more minimal space between word-meaning pairs
       
-      // Function to create word canvas with MUCH bigger font
+      // Function to create word canvas for clean grid
       const createWordCanvas = (word) => {
+        // Calculate optimal canvas dimensions based on font size and text content
+        const fontSize = baseFontSize; // Use reduced font size (60px)
+        const padding = 15; // Reduced padding for smaller font size
+        
+        // Create temporary canvas to measure text dimensions
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCtx.font = `${fontSize}px "QuranFont", "Noto Sans Arabic", Arial, sans-serif`;
+        tempCtx.direction = 'rtl';
+        
+        // Measure text width
+        const textMetrics = tempCtx.measureText(word);
+        const textWidth = textMetrics.width;
+        
+        // Calculate optimal canvas dimensions - prevent clipping
+        const canvasWidth = Math.max(textWidth + (padding * 2), 200); // Reduced minimum width for smaller font
+        const canvasHeight = fontSize * 2.5; // Increased to 150% extra height to completely prevent clipping
+        
         const wordCanvas = document.createElement('canvas');
-        wordCanvas.width = 1000; // Wider canvas
-        wordCanvas.height = 160; // Taller canvas
+        wordCanvas.width = canvasWidth;
+        wordCanvas.height = canvasHeight;
         const wordCtx = wordCanvas.getContext('2d', { alpha: false });
         
         // Enable high-quality rendering
@@ -393,23 +416,23 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
         wordCtx.fillStyle = 'white';
         wordCtx.fillRect(0, 0, wordCanvas.width, wordCanvas.height);
         
-        // Configure text style for Arabic word - MUCH BIGGER FONT
+        // Configure text style for Arabic word - RTL alignment with calculated font size
         wordCtx.fillStyle = 'black';
-        wordCtx.textAlign = 'center';
+        wordCtx.textAlign = 'right'; // Right align for RTL text
         wordCtx.textBaseline = 'middle';
-        wordCtx.font = '80px "QuranFont", "Noto Sans Arabic", Arial, sans-serif'; // Increased from 56px to 80px
+        wordCtx.font = `${fontSize}px "QuranFont", "Noto Sans Arabic", Arial, sans-serif`;
         wordCtx.direction = 'rtl';
         
-        // Draw the word
-        wordCtx.fillText(word, wordCanvas.width / 2, wordCanvas.height / 2);
+        // Draw the word aligned to the right with calculated padding
+        wordCtx.fillText(word, wordCanvas.width - padding, wordCanvas.height / 2);
         
         return wordCanvas;
       };
       
-      // Process words in groups of 3
+      // Process words in pairs (2 words per row for clean 4-column layout)
       for (let i = 0; i < selectedWords.length; i += wordsPerRow) {
         // Check if we need a new page
-        if (currentY > pageHeight - 80) {
+        if (currentY > pageHeight - 120) {
           pdf.addPage();
           currentY = 20;
           
@@ -421,37 +444,31 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
         }
         
         const rowWords = selectedWords.slice(i, i + wordsPerRow);
-        const wordWidth = (pageWidth - 30) / wordsPerRow; // Reduced margins
         
-        // Add words in current row
-        rowWords.forEach((word, colIndex) => {
+        // Add words in their respective columns
+        rowWords.forEach((word, wordIndex) => {
+          // Calculate word column position - RTL layout: first column is rightmost (column 3)
+          const totalWordIndex = i + wordIndex;
+          // For RTL: 0,2,4,6,8,10 -> column 3 (rightmost/first); 1,3,5,7,9 -> column 1 (leftmost/second)
+          const isEvenIndex = totalWordIndex % 2 === 0;
+          const wordColumnIndex = isEvenIndex ? 3 : 1; // Even indices go to column 3 (rightmost), odd indices go to column 1
+          
+          // Add word in its column
           const wordCanvas = createWordCanvas(word);
           const wordImgData = wordCanvas.toDataURL('image/png', 1.0);
-          const wordImgWidth = wordWidth - 5; // Minimal margin
+          const wordImgWidth = columnWidth - 2; // Very minimal margin for maximum tightness
           const wordImgHeight = (wordCanvas.height * wordImgWidth) / wordCanvas.width;
-          const xPos = 15 + (colIndex * wordWidth); // Reduced margin
+          const wordXPos = 20 + (wordColumnIndex * columnWidth); // Centered positioning with equal margins
           
-          pdf.addImage(wordImgData, 'PNG', xPos, currentY, wordImgWidth, wordImgHeight, undefined, 'FAST');
+          pdf.addImage(wordImgData, 'PNG', wordXPos, currentY, wordImgWidth, wordImgHeight, undefined, 'FAST');
         });
         
-        currentY += wordHeight;
+        currentY += wordRowHeight;
         
-        // Add empty lines for meanings under each word
-        pdf.setDrawColor(100, 100, 100); // Darker lines
-        pdf.setLineWidth(0.5); // Thicker lines
+        // Add empty space for meanings in columns 0 and 2 (meaning columns on the left)
+        currentY += 2; // Very minimal vertical spacing with optimized canvas
         
-        for (let lineIndex = 0; lineIndex < 2; lineIndex++) { // 2 lines per word
-          currentY += 8; // Notebook-style line spacing for better writing experience
-          // Draw lines under each word position
-          rowWords.forEach((word, colIndex) => {
-            const wordWidth = (pageWidth - 30) / wordsPerRow; // Reduced margins
-            const xStart = 15 + (colIndex * wordWidth);
-            const xEnd = xStart + wordWidth - 5;
-            pdf.line(xStart, currentY, xEnd, currentY);
-          });
-        }
-        
-        currentY += wordSpacing;
+        currentY += rowSpacing; // Very minimal space before next word pair
       }
     }
 
