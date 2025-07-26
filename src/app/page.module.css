@@ -54,6 +54,8 @@
   /* Mobile-first: single column layout */
   grid-template-columns: 1fr;
   height: auto;
+  /* Allow flexible height for collapsible content */
+  align-items: start;
 }
 
 /* Add spacing between sections on mobile */
@@ -96,7 +98,8 @@
 @media (min-width: 768px) {
   .grid {
     grid-template-columns: 1fr 1fr 1fr;
-    height: calc((100vh - 180px) / 2);
+    height: auto; /* Changed from fixed height to auto for collapsible content */
+    align-items: start; /* Align columns to top */
   }
   
   .column {
@@ -112,6 +115,7 @@
   .grid {
     grid-template-columns: 1fr 1fr;
     height: auto;
+    align-items: start;
   }
   
   .column {

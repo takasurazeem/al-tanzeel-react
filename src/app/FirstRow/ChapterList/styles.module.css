@@ -4,6 +4,64 @@
   padding: 16px;
   overflow: hidden;
   min-width: 200px;
+  transition: all 0.3s ease;
+  /* Fixed initial height as percentage of viewport */
+  height: 60vh;
+}
+
+.collapsed {
+  height: auto !important; /* Override any inherited height */
+  min-height: 80px; /* Just enough for header */
+  max-height: 80px; /* Prevent expansion */
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 10px;
+}
+
+.selectedInfo {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: normal;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.toggleButton {
+  background: #333;
+  border: none;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  min-width: 32px;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background-color 0.2s;
+}
+
+.toggleButton:hover {
+  background: #555;
+}
+
+.content {
+  height: calc(100% - 60px); /* Account for header */
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.contentCollapsed {
+  height: 0;
+  opacity: 0;
 }
 
 .searchInput {
@@ -38,4 +96,45 @@
 
 .selected {
   background: #444;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 767px) {
+  .column {
+    height: 50vh; /* Smaller on mobile */
+  }
+  
+  .collapsed {
+    min-height: 70px;
+    max-height: 70px; /* Smaller collapsed height on mobile */
+  }
+  
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .selectedInfo {
+    font-size: 0.8rem;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+  }
+  
+  .toggleButton {
+    align-self: flex-end;
+    margin-top: -32px;
+  }
+}
+
+/* Desktop adjustments */
+@media (min-width: 768px) {
+  .column {
+    height: 65vh; /* Larger on desktop */
+  }
+  
+  .collapsed {
+    max-height: 80px; /* Ensure collapsed height is enforced on desktop too */
+  }
 }
