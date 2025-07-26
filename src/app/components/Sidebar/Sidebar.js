@@ -10,8 +10,7 @@ import {
   isValidHijriDate 
 } from '../../utils/hijriCalendar';
 
-export const Sidebar = ({ onPreferencesChange, fontSize, onFontSizeChange }) => {
-  const [isOpen, setIsOpen] = useState(false);
+export const Sidebar = ({ onPreferencesChange, fontSize, onFontSizeChange, isOpen, onToggle }) => {
   const [formData, setFormData] = useState({
     className: '',
     masjidName: ''
@@ -189,16 +188,7 @@ export const Sidebar = ({ onPreferencesChange, fontSize, onFontSizeChange }) => 
   };
 
   return (
-    <div className={styles.sidebarContainer}>
-      {/* Hamburger Button */}
-      <button 
-        className={styles.menuButton}
-        onClick={() => setIsOpen(prev => !prev)}
-        aria-label="Toggle Settings"
-      >
-        <span className={`${styles.menuIcon} ${isOpen ? styles.open : ''}`} />
-      </button>
-
+    <>
       {/* Sidebar Panel */}
       <aside className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
         <div className={styles.sidebarContent}>
@@ -308,10 +298,10 @@ export const Sidebar = ({ onPreferencesChange, fontSize, onFontSizeChange }) => 
       {isOpen && (
         <div 
           className={styles.backdrop}
-          onClick={() => setIsOpen(false)}
+          onClick={() => onToggle(false)}
           aria-hidden="true"
         />
       )}
-    </div>
+    </>
   );
 };

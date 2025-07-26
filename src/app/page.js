@@ -19,6 +19,7 @@ export default function Home() {
   const [fontSize, setFontSize] = useState(32);
   const [secondRowSelectedVerses, setSecondRowSelectedVerses] = useState([]);
   const [selectedWords, setSelectedWords] = useState([]);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [preferences, setPreferences] = useState({
     className: '',
     masjidName: '',
@@ -134,12 +135,22 @@ export default function Home() {
     generateDecoratePDF(true, preferences, firstVerse, selectedVerses, selectedWords, pdfDate);
   };
 
+  const handleSidebarToggle = (value) => {
+    if (typeof value === 'boolean') {
+      setSidebarOpen(value);
+    } else {
+      setSidebarOpen(prev => !prev);
+    }
+  };
+
   return (
     <div className={styles.container}>
       <Sidebar 
         onPreferencesChange={setPreferences} 
         fontSize={fontSize}
         onFontSizeChange={setFontSize}
+        isOpen={sidebarOpen}
+        onToggle={handleSidebarToggle}
       />
       <div className={styles.topControls}>
         <div className={styles.leftControls}>
@@ -156,8 +167,18 @@ export default function Home() {
             Generate PDF
           </button>
         </div>
-        <h2 className={styles.rowTitle}>Verses for Translation</h2>
+        <div className={styles.rightControls}>
+          <button 
+            className={styles.menuButton}
+            onClick={() => handleSidebarToggle()}
+            aria-label="Toggle Settings"
+          >
+            <span className={`${styles.menuIcon} ${sidebarOpen ? styles.open : ''}`} />
+          </button>
+        </div>
       </div>
+      {/* Title Row */}
+      <h2 className={styles.rowTitle}>Verses for Translation</h2>
       {/* First Row - Remove duplicate title */}
       <div className={styles.grid}>
         <ChapterList
