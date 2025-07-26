@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf';
-export const generateDecoratePDF = async (shouldPrint = false, preferences = {}, firstVerse = '', selectedVerses = [], selectedWords = [], selectedDate = null) => {
+export const generateDecoratePDF = async (shouldPrint = false, preferences = {}, firstVerse = '', selectedVerses = [], selectedWords = [], selectedDate = null, pageSize = 'a4') => {
   console.log("Starting PDF generation with:", {
     preferences,
     firstVerse,
@@ -9,14 +9,30 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
     wordsCount: selectedWords.length,
     masjidName: preferences.masjidName,
     className: preferences.className,
-    selectedDate
+    selectedDate,
+    pageSize
   });
 
   try {
-    // Create canvas for Quran verse
+    // Define page size dimensions (in mm for jsPDF)
+    const pageSizes = {
+      'a4': { width: 210, height: 297 },
+      'a3': { width: 297, height: 420 },
+      'a5': { width: 148, height: 210 },
+      'letter': { width: 216, height: 279 },
+      'legal': { width: 216, height: 356 }
+    };
+    
+    const selectedPageSize = pageSizes[pageSize.toLowerCase()] || pageSizes['a4'];
+    
+    // Calculate canvas width based on page size (convert mm to pixels approximately)
+    // Using 3.78 pixels per mm (96 DPI conversion)
+    const canvasWidthFactor = selectedPageSize.width * 3.78 * 2.5; // Scale factor for high quality
+    
+    // Create canvas for Quran verse with dynamic width
     const canvas = document.createElement('canvas');
-    canvas.width = 3000;
-    canvas.height = 400; // Reduced height
+    canvas.width = canvasWidthFactor;
+    canvas.height = 400; // Keep height proportional
     const ctx = canvas.getContext('2d', { alpha: false });
     
     // Enable high-quality rendering
@@ -44,11 +60,11 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
     // Draw the Arabic text
     ctx.fillText(firstVerse, canvas.width / 2, canvas.height / 2);
     
-    // Create PDF
+    // Create PDF with specified page size
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
-      format: 'a4',
+      format: pageSize.toLowerCase(), // Use the passed page size
       compress: false
     });
 
@@ -248,11 +264,59 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
       const verseSpacing = 8; // Minimal verse spacing
       const verseWidth = pageWidth - 20; // Wider text area
       
-      // Function to create verse canvas (Arabic text only) with MUCH larger font
+      // Function to create verse canvas (Arabic text only) with multi-line text wrapping
       const createVerseCanvas = (verseText) => {
+        const baseFontSize = 120; // Keep standard font size
+        const padding = 40; // Padding for verses
+        const lineHeight = baseFontSize * 1.2; // Line height for multi-line text
+        const maxWidth = canvasWidthFactor - (padding * 2); // Maximum width per line
+        
+        // Create temporary canvas to measure text and break into lines
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCtx.font = `${baseFontSize}px "QuranFont", "Noto Sans Arabic", Arial, sans-serif`;
+        tempCtx.direction = 'rtl';
+        
+        // Function to break text into lines that fit within maxWidth
+        const wrapText = (text, maxWidth) => {
+          const words = text.split(' ');
+          const lines = [];
+          let currentLine = '';
+          
+          for (let i = 0; i < words.length; i++) {
+            const testLine = currentLine ? `${currentLine} ${words[i]}` : words[i];
+            const testWidth = tempCtx.measureText(testLine).width;
+            
+            if (testWidth > maxWidth && currentLine) {
+              lines.push(currentLine);
+              currentLine = words[i];
+            } else {
+              currentLine = testLine;
+            }
+          }
+          
+          if (currentLine) {
+            lines.push(currentLine);
+          }
+          
+          return lines;
+        };
+        
+        // Break text into lines
+        const lines = wrapText(verseText, maxWidth);
+        
+        // Add verse ending character to the last line
+        if (lines.length > 0) {
+          lines[lines.length - 1] += ' ۞'; // Add traditional Quranic verse ending marker
+        }
+        
+        // Calculate canvas dimensions based on number of lines
+        const canvasWidth = canvasWidthFactor; // Use full page-based width
+        const canvasHeight = (lines.length * lineHeight) + (padding * 2); // Dynamic height based on lines
+        
         const verseCanvas = document.createElement('canvas');
-        verseCanvas.width = 3200; // Much wider canvas
-        verseCanvas.height = 220; // Much taller for bigger font
+        verseCanvas.width = canvasWidth;
+        verseCanvas.height = canvasHeight;
         const verseCtx = verseCanvas.getContext('2d', { alpha: false });
         
         // Enable high-quality rendering
@@ -263,16 +327,21 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
         verseCtx.fillStyle = 'white';
         verseCtx.fillRect(0, 0, verseCanvas.width, verseCanvas.height);
         
-        // Configure text style for Arabic - MUCH BIGGER FONT
+        // Configure text style for Arabic
         verseCtx.fillStyle = 'black';
         verseCtx.textAlign = 'right';
-        verseCtx.textBaseline = 'middle';
-        verseCtx.font = '120px "QuranFont", "Noto Sans Arabic", Arial, sans-serif'; // Increased to 120px
+        verseCtx.textBaseline = 'top';
+        verseCtx.font = `${baseFontSize}px "QuranFont", "Noto Sans Arabic", Arial, sans-serif`;
         verseCtx.direction = 'rtl';
         
-        // Draw the Arabic text
-        const xPos = verseCanvas.width - 20;
-        verseCtx.fillText(verseText, xPos, verseCanvas.height / 2);
+        // Draw each line of text
+        const startX = verseCanvas.width - padding;
+        const startY = padding;
+        
+        lines.forEach((line, index) => {
+          const yPos = startY + (index * lineHeight);
+          verseCtx.fillText(line, startX, yPos);
+        });
         
         return verseCanvas;
       };

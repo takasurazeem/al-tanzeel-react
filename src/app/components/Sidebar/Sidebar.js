@@ -13,7 +13,8 @@ import {
 export const Sidebar = ({ onPreferencesChange, fontSize, onFontSizeChange, isOpen, onToggle }) => {
   const [formData, setFormData] = useState({
     className: '',
-    masjidName: ''
+    masjidName: '',
+    pageSize: 'a4'
   });
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [calendarType, setCalendarType] = useState('gregorian');
@@ -221,6 +222,23 @@ export const Sidebar = ({ onPreferencesChange, fontSize, onFontSizeChange, isOpe
                 placeholder="Enter masjid name"
                 autoComplete="off"
               />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="pageSize">Page Size</label>
+              <select
+                id="pageSize"
+                name="pageSize"
+                value={formData.pageSize}
+                onChange={handleInputChange}
+                className={styles.input}
+              >
+                <option value="a4">A4 (210 × 297 mm)</option>
+                <option value="a3">A3 (297 × 420 mm)</option>
+                <option value="a5">A5 (148 × 210 mm)</option>
+                <option value="letter">Letter (8.5 × 11 in)</option>
+                <option value="legal">Legal (8.5 × 14 in)</option>
+              </select>
             </div>
 
             <div className={styles.formGroup}>
