@@ -4,17 +4,30 @@ import sharedStyles from '../../shared/styles/shared.module.css';
 
 export const ChapterList = ({ chapters, selectedChapter, onChapterSelect, searchTerm, onSearchChange }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
-  // Auto-collapse when a chapter is selected
+  // Check if device is mobile
   useEffect(() => {
-    if (selectedChapter) {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 767);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Auto-collapse when a chapter is selected (only on mobile)
+  useEffect(() => {
+    if (selectedChapter && isMobile) {
       setIsCollapsed(true);
     }
-  }, [selectedChapter]);
+  }, [selectedChapter, isMobile]);
 
   const handleChapterSelect = (chapter) => {
     onChapterSelect(chapter);
-    // Will auto-collapse due to the useEffect above
+    // Will auto-collapse due to the useEffect above (only on mobile)
   };
 
   const toggleCollapse = () => {
@@ -22,26 +35,29 @@ export const ChapterList = ({ chapters, selectedChapter, onChapterSelect, search
   };
 
   return (
-    <div className={`${styles.column} ${isCollapsed ? styles.collapsed : ''}`}>
+    <div className={`${styles.chapterColumn} ${isCollapsed && isMobile ? styles.collapsed : ''}`}>
       <div className={styles.header}>
         <h3 className={sharedStyles.columnTitle}>
           Select Surah
-          {selectedChapter && (
+          {selectedChapter && isMobile && (
             <span className={styles.selectedInfo}>
               - {selectedChapter.id}. {selectedChapter.transliteration}
             </span>
           )}
         </h3>
-        <button 
-          className={styles.toggleButton}
-          onClick={toggleCollapse}
-          aria-label={isCollapsed ? "Expand surah list" : "Collapse surah list"}
-        >
-          {isCollapsed ? '▼' : '▲'}
-        </button>
+        {/* Only show toggle button on mobile */}
+        {isMobile && (
+          <button 
+            className={styles.toggleButton}
+            onClick={toggleCollapse}
+            aria-label={isCollapsed ? "Expand surah list" : "Collapse surah list"}
+          >
+            {isCollapsed ? '▼' : '▲'}
+          </button>
+        )}
       </div>
       
-      <div className={`${styles.content} ${isCollapsed ? styles.contentCollapsed : ''}`}>
+      <div className={`${styles.content} ${isCollapsed && isMobile ? styles.contentCollapsed : ''}`}>
         <input
           type="text"
           placeholder="Search by ID or name..."

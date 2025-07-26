@@ -98,8 +98,8 @@
 @media (min-width: 768px) {
   .grid {
     grid-template-columns: 1fr 1fr 1fr;
-    height: auto; /* Changed from fixed height to auto for collapsible content */
-    align-items: start; /* Align columns to top */
+    height: calc(100vh - 250px); /* Restore proper grid height for desktop */
+    align-items: stretch; /* Make columns fill the grid height */
   }
   
   .column {
@@ -107,6 +107,7 @@
     min-width: 200px;
     margin-bottom: 0;
     border: none;
+    height: 100%; /* Fill the grid cell */
   }
 }
 
@@ -114,12 +115,13 @@
 @media (min-width: 480px) and (max-width: 767px) {
   .grid {
     grid-template-columns: 1fr 1fr;
-    height: auto;
-    align-items: start;
+    height: calc(100vh - 250px); /* Fixed height for small tablets */
+    align-items: stretch;
   }
   
   .column {
     min-height: 250px;
+    height: 100%;
   }
 }
 
