@@ -50,7 +50,7 @@ export const VerseList = ({ verses, fontSize, onVerseSelect, selectedVerses, sea
       <div className={`${styles.content} ${isCollapsed && isMobile ? styles.contentCollapsed : ''}`}>
         <input
           type="text"
-          placeholder="Search verse by ID..."
+          placeholder="Search verse by number..."
           value={searchTerm}
           onChange={onSearchChange}
           className={styles.searchInput}
