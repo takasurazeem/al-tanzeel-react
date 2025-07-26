@@ -8,6 +8,7 @@
 # Colors for output
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 echo -e "${BLUE}بِسْمِ الله - Starting commit process...${NC}"
@@ -33,17 +34,36 @@ git diff --cached --name-status
 
 echo ""
 
+# Function to format commit message
+format_commit_message() {
+    local msg="$1"
+    
+    # Check if message already has Islamic phrases
+    if [[ "$msg" == *"بِسْمِ الله"* ]] || [[ "$msg" == *"الحمدالله"* ]]; then
+        echo "$msg"
+    else
+        echo -e "بِسْمِ الله\n\n$msg\n\nالحمدالله"
+    fi
+}
+
 # Commit with message
 if [ -n "$1" ]; then
-    # Use provided message
-    git commit -m "$1"
+    # Use provided message and format it
+    FORMATTED_MSG=$(format_commit_message "$1")
+    echo -e "${YELLOW}Commit message:${NC}"
+    echo "$FORMATTED_MSG"
+    echo ""
+    git commit -m "$FORMATTED_MSG"
 else
-    # Open editor for message
+    # For interactive commits, let the hook handle formatting
     git commit
 fi
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}الحمدالله - Commit successful!${NC}"
+    echo ""
+    echo -e "${BLUE}Latest commit:${NC}"
+    git log -1 --oneline
 else
     echo "Commit failed"
     exit 1
