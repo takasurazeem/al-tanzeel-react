@@ -3,8 +3,8 @@ import styles from './styles.module.css';
 import sharedStyles from '../../shared/styles/shared.module.css';
 import { useLanguage } from '../../contexts/LanguageContext';
 
-export const SelectedVersesList = ({ verses, fontSize, onRemoveVerse, className = '' }) => {
-  const { t } = useLanguage();
+export const SelectedVersesList = ({ verses, fontSize, onRemoveVerse, onLineCountChange, className = '' }) => {
+  const { t, isRTL } = useLanguage();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -22,6 +22,18 @@ export const SelectedVersesList = ({ verses, fontSize, onRemoveVerse, className 
 
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
+  };
+
+  const handleLineCountDecrease = (verseId, currentLines) => {
+    if (currentLines > 1) {
+      onLineCountChange(verseId, currentLines - 1);
+    }
+  };
+
+  const handleLineCountIncrease = (verseId, currentLines) => {
+    if (currentLines < 12) { // Maximum reasonable limit
+      onLineCountChange(verseId, currentLines + 1);
+    }
   };
 
   const selectedCount = verses.length;
@@ -58,15 +70,39 @@ export const SelectedVersesList = ({ verses, fontSize, onRemoveVerse, className 
         <ul className={styles.selectedVersesList}>
           {verses.map(verse => (
             <li key={verse.id} className={styles.selectedVerseItem}>
-              <span style={{ flex: 1, wordWrap: 'break-word', overflowWrap: 'break-word' }}>
-                {verse.text}
-              </span>
-              <button 
-                className={styles.removeButton}
-                onClick={() => onRemoveVerse(verse)}
-              >
-                ×
-              </button>
+              <div className={styles.verseContent}>
+                <span style={{ flex: 1, wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+                  {verse.text}
+                </span>
+                <button 
+                  className={styles.removeButton}
+                  onClick={() => onRemoveVerse(verse)}
+                >
+                  ×
+                </button>
+              </div>
+              <div className={styles.lineCountControls} dir={isRTL ? 'rtl' : 'ltr'}>
+                <span className={styles.lineCountLabel}>{t('translationLines')}:</span>
+                <div className={styles.stepper}>
+                  <button 
+                    className={styles.stepperButton}
+                    onClick={() => handleLineCountDecrease(verse.id, verse.translationLines)}
+                    disabled={verse.translationLines <= 1}
+                    aria-label={t('decreaseLines')}
+                  >
+                    −
+                  </button>
+                  <span className={styles.lineCountValue}>{verse.translationLines || 2}</span>
+                  <button 
+                    className={styles.stepperButton}
+                    onClick={() => handleLineCountIncrease(verse.id, verse.translationLines)}
+                    disabled={verse.translationLines >= 12}
+                    aria-label={t('increaseLines')}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
             </li>
           ))}
         </ul>

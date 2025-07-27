@@ -142,14 +142,104 @@
   background: #444;
   border-radius: 4px;
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  flex-direction: column;
+  gap: 8px;
   direction: rtl;
   text-align: right;
   font-family: 'QuranFont', Arial, sans-serif;
   word-wrap: break-word;
   overflow-wrap: break-word;
   line-height: 1.4;
+}
+
+.verseContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.lineCountControls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 8px;
+  border-top: 1px solid #555;
+  font-size: 0.9rem;
+}
+
+/* RTL layout (Urdu) - label on right, stepper on left */
+.lineCountControls[dir="rtl"] {
+  flex-direction: row;
+}
+
+.lineCountControls[dir="rtl"] .lineCountLabel {
+  order: 2;
+}
+
+.lineCountControls[dir="rtl"] .stepper {
+  order: 1;
+}
+
+/* LTR layout (English) - label on left, stepper on right */
+.lineCountControls[dir="ltr"] {
+  flex-direction: row;
+}
+
+.lineCountControls[dir="ltr"] .lineCountLabel {
+  order: 1;
+}
+
+.lineCountControls[dir="ltr"] .stepper {
+  order: 2;
+}
+
+.lineCountLabel {
+  color: #ccc;
+  font-family: 'Geist', Arial, sans-serif;
+  direction: ltr;
+  text-align: left;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  direction: ltr;
+}
+
+.stepperButton {
+  background: #666;
+  border: none;
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.stepperButton:hover:not(:disabled) {
+  background: #777;
+}
+
+.stepperButton:disabled {
+  background: #333;
+  color: #666;
+  cursor: not-allowed;
+}
+
+.lineCountValue {
+  color: #fff;
+  font-weight: bold;
+  min-width: 20px;
+  text-align: center;
+  font-family: 'Geist', Arial, sans-serif;
 }
 
 .removeButton {

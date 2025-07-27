@@ -406,6 +406,12 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
       
       // Function to calculate accurate lines needed based on Urdu translation and page layout
       const estimateLines = (verse) => {
+        // If verse already has translationLines property set by user, use that
+        if (verse.translationLines && typeof verse.translationLines === 'number') {
+          return verse.translationLines;
+        }
+        
+        // Fallback to original calculation if translationLines is not set
         if (!verse || !verse.translation) return 2; // Default minimum lines if no translation
         
         const urduTranslation = verse.translation;

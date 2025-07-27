@@ -10,6 +10,7 @@ import { SelectedWordsForTranslation } from './SecondRow/SelectedWordsForTransla
 import { generateDecoratePDF } from './utils/pdfGenerator';
 import { Sidebar } from './components/Sidebar/Sidebar';
 import { useLanguage } from './contexts/LanguageContext';
+import { calculateTranslationLines } from './utils/lineCalculator';
 
 export default function Home() {
   const { language, t, isRTL } = useLanguage();
@@ -27,7 +28,8 @@ export default function Home() {
     masjidName: '',
     selectedDate: new Date().toISOString().split('T')[0],
     calendarType: 'gregorian',
-    hijriDate: null
+    hijriDate: null,
+    pageSize: 'a4'
   });
 
   useEffect(() => {
@@ -58,10 +60,18 @@ export default function Home() {
 
   const handleVerseSelect = (verse) => {
     setSelectedVerses(prev => {
-      if (prev.find(v => v.id === verse.id)) {
+      const existingVerse = prev.find(v => v.id === verse.id);
+      if (existingVerse) {
         return prev.filter(v => v.id !== verse.id);
       }
-      return [...prev, verse];
+      
+      // Add translationLines property when selecting a verse
+      const enhancedVerse = {
+        ...verse,
+        translationLines: calculateTranslationLines(verse, preferences.pageSize || 'a4')
+      };
+      
+      return [...prev, enhancedVerse];
     });
   };
 
@@ -81,6 +91,16 @@ export default function Home() {
       }
       return [...prev, word];
     });
+  };
+
+  const handleLineCountChange = (verseId, newLineCount) => {
+    setSelectedVerses(prev => 
+      prev.map(verse => 
+        verse.id === verseId 
+          ? { ...verse, translationLines: newLineCount }
+          : verse
+      )
+    );
   };
 
   const handleReset = () => {
@@ -203,6 +223,7 @@ export default function Home() {
           verses={selectedVerses}
           fontSize={fontSize}
           onRemoveVerse={handleVerseSelect}
+          onLineCountChange={handleLineCountChange}
           className={!selectedChapter ? styles.hiddenOnMobileWhenNoChapter : ''}
         />
       </div>

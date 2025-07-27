@@ -48,6 +48,9 @@ export const translations = {
     collapseVerseList: "Collapse verse list",
     expandSelectedVerses: "Expand selected verses",
     collapseSelectedVerses: "Collapse selected verses",
+    translationLines: "Translation lines",
+    decreaseLines: "Decrease line count",
+    increaseLines: "Increase line count",
     
     // Word selection
     wordsFromVerses: "Words from Verses",
@@ -127,6 +130,9 @@ export const translations = {
     collapseVerseList: "آیات کی فہرست بند کریں",
     expandSelectedVerses: "منتخب آیات کھولیں",
     collapseSelectedVerses: "منتخب آیات بند کریں",
+    translationLines: "ترجمے کی لائنیں",
+    decreaseLines: "لائنوں کی تعداد کم کریں",
+    increaseLines: "لائنوں کی تعداد بڑھائیں",
     
     // Word selection
     wordsFromVerses: "آیات سے الفاظ",
