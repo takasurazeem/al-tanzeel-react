@@ -64,15 +64,42 @@ npm start              # Production server
 - **Islamic formatting**: All commits automatically use `بِسْمِ الله` (Bismillah) prefix and `الحمدالله` (Alhamdulillah) suffix
 - **Detailed context required**: Commit messages must provide comprehensive context for future developers
 - **Structure format**: `[type]: [component/area] - [detailed description with context]`
+- **Bullet-point organization**: Use bullet points with detailed sub-bullets for comprehensive documentation
 - **Essential information to include**:
   - **What changed**: Specific files, functions, or features modified
   - **Why changed**: Business logic, bug fix, or improvement reason
   - **Impact scope**: Which workflows or components are affected
   - **Technical details**: Implementation approach or algorithm changes
-- **Examples of good commit messages**:
-  - `fix: pdfGenerator.js coordinate validation - Add variable scope management for currentY tracking and coordinate validation before jsPDF.addImage calls to prevent invalid coordinates error in words meanings section`
-  - `feat: canvas sizing algorithm - Implement dynamic text measurement-based canvas sizing using measureText API and actualBoundingBox metrics to prevent Arabic text clipping across all PDF generation components`
-  - `refactor: verse selection state - Optimize dual-array state management in page.js by consolidating selectedVerses and secondRowSelectedVerses toggle handlers for better maintainability`
+  - **Feature breakdown**: Organize changes into logical categories with bullet points
+- **Examples of comprehensive commit messages**:
+  ```
+  feat: HijriDatePicker mobile responsiveness - Complete mobile calendar viewport optimization with full-screen modal implementation and progressive responsive breakpoints
+
+  • Mobile Modal Implementation:
+    - Added full-screen modal for mobile devices (≤768px) with overlay backdrop
+    - Implemented mobile detection with window resize listener and isMobile state
+    - Added close button and escape key support for modal dismissal
+    - Prevented body scroll when modal is open for better UX
+
+  • Calendar Grid Optimization:
+    - Fixed 7th column viewport overflow by reducing margins (16px → 8px → 4px → 2px)
+    - Optimized grid gaps progressively (6px → 3px → 1px → 0px) across breakpoints
+    - Used minmax(0, 1fr) grid template for reliable column distribution
+    - Added box-sizing border-box and min-width 0 to prevent button overflow
+
+  • Progressive Responsive Design:
+    - 768px: Full-screen modal with 48px touch targets and 3px gaps
+    - 480px: Reduced margins to 6px and gaps to 2px for better space utilization
+    - 360px: Ultra-compact with 1px gaps and 4px margins for small screens
+    - 320px: Zero-gap layout with 2px margins for maximum space efficiency
+
+  This ensures complete calendar accessibility on all mobile devices with no off-screen rendering issues while maintaining Islamic app design principles and responsive usability standards.
+  ```
+- **Commit message sections**:
+  - **Main title**: Brief description with component and primary feature
+  - **Feature categories**: Group related changes with bullet points (•)
+  - **Implementation details**: Sub-bullets (-) with specific technical changes
+  - **Impact statement**: Final paragraph explaining benefits and alignment with project goals
 - **Use available commit tools**:
   - `npm run bismillah "detailed message"` - Quick commit with Islamic formatting
   - `npm run commit` - Interactive commit helper with guidance
