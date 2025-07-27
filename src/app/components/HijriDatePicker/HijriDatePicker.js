@@ -24,6 +24,7 @@ export function HijriDatePicker({ value, onChange, placeholder = "Select Hijri D
   const [isOpen, setIsOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState(value?.day || '');
   const [selectedMonth, setSelectedMonth] = useState(value?.month || '');
+  const [isMobile, setIsMobile] = useState(false);
   
   // Get current Hijri year more accurately
   const getCurrentHijriYear = () => {
@@ -36,6 +37,38 @@ export function HijriDatePicker({ value, onChange, placeholder = "Select Hijri D
   
   const dropdownRef = useRef(null);
 
+  // Check if device is mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Handle escape key to close modal on mobile
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key === 'Escape' && isOpen && isMobile) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen && isMobile) {
+      document.addEventListener('keydown', handleEscape);
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen, isMobile]);
+
   // Calculate minimum date (2 days in the past)
   const getMinDate = () => {
     const twoDaysAgo = new Date();
@@ -45,19 +78,22 @@ export function HijriDatePicker({ value, onChange, placeholder = "Select Hijri D
 
   const minDate = getMinDate();
 
-  // Close dropdown when clicking outside
+  // Close dropdown when clicking outside (desktop only)
   useEffect(() => {
     function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target) && !isMobile) {
         setIsOpen(false);
       }
     }
 
-    document.addEventListener('mousedown', handleClickOutside);
+    if (!isMobile) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, []);
+  }, [isMobile]);
 
   // Generate calendar grid for the current month
   const generateCalendarDays = () => {
@@ -128,6 +164,10 @@ export function HijriDatePicker({ value, onChange, placeholder = "Select Hijri D
     setSelectedDay(''); // Reset day when month changes
   };
 
+  const handleClose = () => {
+    setIsOpen(false);
+  };
+
   const formatDisplayValue = () => {
     if (selectedDay && selectedMonth) {
       const hijriMonths = t('hijriMonths');
@@ -149,72 +189,90 @@ export function HijriDatePicker({ value, onChange, placeholder = "Select Hijri D
       </button>
 
       {isOpen && (
-        <div className={styles.dropdown}>
-          {/* Year Display */}
-          <div className={styles.yearDisplay}>
-            {selectedYear} AH
-          </div>
-
-          {/* Month Selection */}
-          <div className={styles.monthSelector}>
-            <select
-              value={selectedMonth}
-              onChange={(e) => handleMonthChange(e.target.value)}
-              className={styles.monthSelect}
-            >
-              <option value="">{t('selectMonth')}</option>
-              {HIJRI_MONTHS.map((month, index) => {
-                const hijriMonths = t('hijriMonths');
-                const monthName = hijriMonths[index] || month.en;
-                return (
-                  <option key={index + 1} value={index + 1}>
-                    {monthName}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
-
-          {/* Calendar Grid */}
-          {selectedMonth && (
-            <div className={styles.calendar}>
-              <div className={styles.calendarHeader}>
-                {t('hijriMonths')[selectedMonth - 1]} {selectedYear} AH
+        <>
+          {isMobile && <div className={styles.modalOverlay} onClick={handleClose} />}
+          <div className={`${styles.dropdown} ${isMobile ? styles.mobileModal : ''}`}>
+            {/* Mobile Close Button */}
+            {isMobile && (
+              <div className={styles.mobileHeader}>
+                <h3 className={styles.modalTitle}>{t('selectHijriDate') || 'Select Hijri Date'}</h3>
+                <button
+                  type="button"
+                  className={styles.closeButton}
+                  onClick={handleClose}
+                  aria-label="Close"
+                >
+                  ×
+                </button>
               </div>
-              <div className={styles.daysGrid}>
-                {generateCalendarDays().map(({ day, disabled }) => (
-                  <button
-                    key={day}
-                    type="button"
-                    className={`${styles.dayButton} ${selectedDay === day ? styles.selectedDay : ''} ${disabled ? styles.disabledDay : ''}`}
-                    onClick={() => handleDayClick(day, disabled)}
-                    disabled={disabled}
-                  >
-                    {day}
-                  </button>
-                ))}
-              </div>
+            )}
+
+            {/* Year Display */}
+            <div className={styles.yearDisplay}>
+              {selectedYear} AH
             </div>
-          )}
 
-          {/* Quick Actions */}
-          <div className={styles.actions}>
-            <button
-              type="button"
-              className={styles.todayButton}
-              onClick={() => {
-                const today = gregorianToHijri(new Date());
-                // Remove the minimum date check for Today button
-                setSelectedDay(today.day);
-                setSelectedMonth(today.month);
-                onChange(today);
-                setIsOpen(false);
-              }}
-            >
-              {t('today')}
-            </button>
+            {/* Month Selection */}
+            <div className={styles.monthSelector}>
+              <select
+                value={selectedMonth}
+                onChange={(e) => handleMonthChange(e.target.value)}
+                className={styles.monthSelect}
+              >
+                <option value="">{t('selectMonth')}</option>
+                {HIJRI_MONTHS.map((month, index) => {
+                  const hijriMonths = t('hijriMonths');
+                  const monthName = hijriMonths[index] || month.en;
+                  return (
+                    <option key={index + 1} value={index + 1}>
+                      {monthName}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+
+            {/* Calendar Grid */}
+            {selectedMonth && (
+              <div className={styles.calendar}>
+                <div className={styles.calendarHeader}>
+                  {t('hijriMonths')[selectedMonth - 1]} {selectedYear} AH
+                </div>
+                <div className={styles.daysGrid}>
+                  {generateCalendarDays().map(({ day, disabled }) => (
+                    <button
+                      key={day}
+                      type="button"
+                      className={`${styles.dayButton} ${selectedDay === day ? styles.selectedDay : ''} ${disabled ? styles.disabledDay : ''}`}
+                      onClick={() => handleDayClick(day, disabled)}
+                      disabled={disabled}
+                    >
+                      {day}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Quick Actions */}
+            <div className={styles.actions}>
+              <button
+                type="button"
+                className={styles.todayButton}
+                onClick={() => {
+                  const today = gregorianToHijri(new Date());
+                  // Remove the minimum date check for Today button
+                  setSelectedDay(today.day);
+                  setSelectedMonth(today.month);
+                  onChange(today);
+                  setIsOpen(false);
+                }}
+              >
+                {t('today')}
+              </button>
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );

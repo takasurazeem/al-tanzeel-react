@@ -114,6 +114,7 @@
   padding: 0;
   margin: 0 auto;
   max-width: 100%;
+  width: 100%;
 }
 
 .dayButton {
@@ -131,6 +132,8 @@
   justify-content: center;
   font-weight: 500;
   width: 100%;
+  box-sizing: border-box;
+  min-width: 0; /* Prevents overflow */
 }
 
 .dayButton:hover {
@@ -186,42 +189,237 @@
   border-color: var(--accent-hover, #0056b3);
 }
 
+/* Hide mobile elements on desktop */
+.modalOverlay,
+.mobileHeader {
+  display: none;
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
-  .dropdown {
+  /* Modal overlay for mobile */
+  .modalOverlay {
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 320px;
-    max-width: 90vw;
-    max-height: 80vh;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 999;
+    backdrop-filter: blur(4px);
+  }
+
+  /* Mobile modal styles */
+  .mobileModal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    transform: none !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
     overflow-y: auto;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
   }
 
-  .yearDisplay {
+  /* Mobile header with close button */
+  .mobileHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color, #444);
+    background: var(--header-bg, #1a1a1a);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  .modalTitle {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-color, #ffffff);
+  }
+
+  .closeButton {
+    background: none;
+    border: none;
+    color: var(--text-color, #ffffff);
+    font-size: 28px;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.2s ease;
+  }
+
+  .closeButton:hover {
+    background: var(--hover-bg, #3a3a3a);
+  }
+
+  /* Content area for mobile */
+  .mobileModal .yearDisplay,
+  .mobileModal .monthSelector,
+  .mobileModal .calendar,
+  .mobileModal .actions {
+    margin: 0 8px 16px 8px;
+  }
+
+  .mobileModal .yearDisplay {
+    margin-top: 20px;
+    font-size: 20px;
+    padding: 16px;
+  }
+
+  .mobileModal .monthSelect {
+    padding: 16px;
     font-size: 16px;
-    padding: 10px;
-    margin-bottom: 12px;
+    border-radius: 12px;
   }
 
-  .monthSelect {
-    padding: 14px;
+  /* Mobile responsive calendar grid */
+  .mobileModal .daysGrid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 3px;
+    padding: 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .mobileModal .dayButton {
+    min-height: 48px;
+    font-size: 15px;
+    padding: 6px 2px;
+    border-radius: 6px;
+    font-weight: 500;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mobileModal .calendarHeader {
     font-size: 16px;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 16px;
   }
 
-  .daysGrid {
-    grid-template-columns: repeat(7, 1fr);
+  .mobileModal .todayButton {
+    padding: 12px 24px;
+    font-size: 14px;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+
+  .mobileModal .actions {
+    padding-top: 16px;
+    margin-top: 16px;
+    margin-bottom: 32px;
+  }
+
+  /* Ensure calendar container doesn't overflow */
+  .mobileModal .calendar {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  /* Desktop dropdown - keep original styles but hide modal overlay */
+  .dropdown:not(.mobileModal) {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--sidebar-bg, #2a2a2a);
+    border: 1px solid var(--border-color, #444);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    z-index: 1000;
+    margin-top: 8px;
+    padding: 16px;
+    backdrop-filter: blur(10px);
+    overflow: hidden;
+  }
+}
+
+/* Additional responsive improvements for very small screens */
+@media (max-width: 480px) {
+  .mobileModal .daysGrid {
     gap: 2px;
   }
 
-  .dayButton {
-    min-height: 36px;
-    font-size: 13px;
+  .mobileModal .dayButton {
+    min-height: 42px;
+    font-size: 14px;
+    padding: 4px 1px;
   }
 
-  .todayButton {
-    padding: 8px 20px;
+  .mobileModal .yearDisplay,
+  .mobileModal .monthSelector,
+  .mobileModal .calendar,
+  .mobileModal .actions {
+    margin: 0 6px 12px 6px;
+  }
+}
+
+/* Ensure no horizontal overflow on any screen size */
+@media (max-width: 360px) {
+  .mobileModal .daysGrid {
+    gap: 1px;
+  }
+
+  .mobileModal .dayButton {
+    min-height: 38px;
+    font-size: 13px;
+    padding: 3px 0px;
+    border-radius: 4px;
+  }
+
+  .mobileModal .yearDisplay,
+  .mobileModal .monthSelector,
+  .mobileModal .calendar,
+  .mobileModal .actions {
+    margin: 0 4px 10px 4px;
+  }
+}
+
+/* Ultra-compact mode for very narrow screens */
+@media (max-width: 320px) {
+  .mobileModal .daysGrid {
+    gap: 0px;
+  }
+
+  .mobileModal .dayButton {
+    min-height: 36px;
     font-size: 12px;
+    padding: 2px 0px;
+    border-radius: 3px;
+    border-width: 0.5px;
+  }
+
+  .mobileModal .yearDisplay,
+  .mobileModal .monthSelector,
+  .mobileModal .calendar,
+  .mobileModal .actions {
+    margin: 0 2px 8px 2px;
   }
 }
