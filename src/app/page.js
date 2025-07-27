@@ -12,7 +12,7 @@ import { Sidebar } from './components/Sidebar/Sidebar';
 import { useLanguage } from './contexts/LanguageContext';
 
 export default function Home() {
-  const { language, changeLanguage, t, isRTL } = useLanguage();
+  const { language, t, isRTL } = useLanguage();
   const [chapters, setChapters] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedChapter, setSelectedChapter] = useState(null);
@@ -168,21 +168,6 @@ export default function Home() {
           >
             {t('generatePdf')}
           </button>
-          {/* Language Switcher */}
-          <div className={styles.languageSwitcher}>
-            <button 
-              className={`${styles.langButton} ${language === 'en' ? styles.active : ''}`}
-              onClick={() => changeLanguage('en')}
-            >
-              EN
-            </button>
-            <button 
-              className={`${styles.langButton} ${language === 'ur' ? styles.active : ''}`}
-              onClick={() => changeLanguage('ur')}
-            >
-              اردو
-            </button>
-          </div>
         </div>
         <div className={styles.rightControls}>
           <button 

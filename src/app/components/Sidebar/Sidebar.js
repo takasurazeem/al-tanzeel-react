@@ -12,7 +12,7 @@ import {
 } from '../../utils/hijriCalendar';
 
 export const Sidebar = ({ onPreferencesChange, fontSize, onFontSizeChange, isOpen, onToggle }) => {
-  const { t, language } = useLanguage();
+  const { t, language, changeLanguage } = useLanguage();
   const [formData, setFormData] = useState({
     className: '',
     masjidName: '',
@@ -307,6 +307,26 @@ export const Sidebar = ({ onPreferencesChange, fontSize, onFontSizeChange, isOpe
                   className={styles.fontButton}
                 >
                   A+
+                </button>
+              </div>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>{t('language')}</label>
+              <div className={styles.languageControls}>
+                <button 
+                  type="button"
+                  onClick={() => changeLanguage('en')}
+                  className={`${styles.languageButton} ${language === 'en' ? styles.active : ''}`}
+                >
+                  English
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => changeLanguage('ur')}
+                  className={`${styles.languageButton} ${language === 'ur' ? styles.active : ''}`}
+                >
+                  اردو
                 </button>
               </div>
             </div>

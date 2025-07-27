@@ -403,3 +403,42 @@
   font-size: 14px;
   font-weight: 500;
 }
+
+/* Language Controls */
+.languageControls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.languageButton {
+  background: #333;
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex: 1;
+}
+
+.languageButton:hover {
+  background: #444;
+  transform: translateY(-1px);
+}
+
+.languageButton.active {
+  background: #4a90e2;
+  color: white;
+}
+
+.languageButton.active:hover {
+  background: #5aa0f2;
+}
