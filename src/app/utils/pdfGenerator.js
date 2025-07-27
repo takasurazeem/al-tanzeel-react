@@ -622,21 +622,97 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
       const wordRowHeight = (baseFontSize * 1.05) * 0.3528; // Much tighter - reduced from 1.2 to 1.05
       const meaningRowHeight = 10; // Reduced height for meaning lines section
       const rowSpacing = 0.5; // Even more minimal space between word-meaning pairs
-      
+
+      // Hoist createWordCanvas above its first usage
+      const createWordCanvas = (word) => {
+        try {
+          // Calculate optimal canvas dimensions based on font size and text content
+          const fontSize = baseFontSize; // Use reduced font size (56px)
+          const padding = 15; // Reduced padding for smaller font size
+          // Create temporary canvas to measure text dimensions
+          const tempCanvas = document.createElement('canvas');
+          const tempCtx = tempCanvas.getContext('2d');
+          tempCtx.font = `${fontSize}px "QuranFont", "Noto Sans Arabic", Arial, sans-serif`;
+          tempCtx.direction = 'rtl';
+          // Measure text width
+          const textMetrics = tempCtx.measureText(word);
+          const textWidth = textMetrics.width;
+          // Calculate optimal canvas dimensions - prevent clipping
+          // More conservative sizing for Safari mobile
+          const isMobileDevice = typeof navigator !== 'undefined' && 
+            (/Mobi|Android|iPhone|iPad|Safari.*Mobile|webOS|BlackBerry|Windows Phone/i.test(navigator.userAgent) ||
+             (typeof window !== 'undefined' && window.screen && window.screen.width <= 768));
+          // Even more conservative for Safari mobile
+          const isSafariMobile = typeof navigator !== 'undefined' && 
+            (/iPhone|iPad/i.test(navigator.userAgent) && /Safari/i.test(navigator.userAgent));
+          // Ultra-conservative scale factors for Safari
+          let scaleFactor = 1.2; // Default
+          if (isSafariMobile) {
+            scaleFactor = 0.6; // Very conservative for Safari mobile
+          } else if (isMobileDevice) {
+            scaleFactor = 0.8; // Conservative for other mobile
+          }
+          const canvasWidth = Math.max(textWidth + (padding * 2), 200) * scaleFactor;
+          const canvasHeight = fontSize * 1.8 * scaleFactor; // Even more reduced for Safari
+          // ...existing code...
+          const wordCanvas = document.createElement('canvas');
+          // Very conservative canvas limits for Safari
+          const maxCanvasSize = isSafariMobile ? 1024 : 2048;
+          if (canvasWidth > maxCanvasSize || canvasHeight > maxCanvasSize) {
+            wordCanvas.width = Math.min(canvasWidth, maxCanvasSize);
+            wordCanvas.height = Math.min(canvasHeight, maxCanvasSize);
+          } else {
+            wordCanvas.width = canvasWidth;
+            wordCanvas.height = canvasHeight;
+          }
+          const wordCtx = wordCanvas.getContext('2d', { alpha: false });
+          if (!wordCtx) {
+            return null;
+          }
+          wordCtx.imageSmoothingEnabled = true;
+          wordCtx.imageSmoothingQuality = 'high';
+          wordCtx.fillStyle = 'white';
+          wordCtx.fillRect(0, 0, wordCanvas.width, wordCanvas.height);
+          wordCtx.fillStyle = 'black';
+          wordCtx.textAlign = 'right';
+          wordCtx.textBaseline = 'middle';
+          wordCtx.font = `${fontSize}px "QuranFont", "Noto Sans Arabic", Arial, sans-serif`;
+          wordCtx.direction = 'rtl';
+          wordCtx.fillText(word, wordCanvas.width - padding, wordCanvas.height / 2);
+          return wordCanvas;
+        } catch (error) {
+          return null;
+        }
+      };
+
       // Calculate total height needed for all words to determine if we need a new page
       const totalWordsRows = Math.ceil(selectedWords.length / wordsPerRow);
       const estimatedWordsHeight = totalWordsRows * (wordRowHeight + meaningRowHeight + rowSpacing) + 20; // Extra margin
-      
-      // Check if words section can fit on current page
-      const availableSpace = pageHeight - borderMargin - 5 - currentY; // Space available from currentY to page bottom
-      
+
+      // Improved grid height calculation: measure actual word canvas heights for accuracy
+      let actualWordsHeight = 0;
+      for (let i = 0; i < selectedWords.length; i += wordsPerRow) {
+        const rowWords = selectedWords.slice(i, i + wordsPerRow);
+        let maxRowHeight = 0;
+        rowWords.forEach(word => {
+          const wordCanvas = createWordCanvas(word);
+          if (wordCanvas) {
+            maxRowHeight = Math.max(maxRowHeight, (wordCanvas.height * columnWidth) / wordCanvas.width);
+          }
+        });
+        actualWordsHeight += maxRowHeight + meaningRowHeight + rowSpacing;
+      }
+      // Removed final '+ 20' margin for tighter fit
+      const availableSpace = pageHeight - borderMargin - currentY; // Space available from currentY to page bottom (no -5 buffer)
+
       console.log('Words section space check:', {
-        currentY: currentY,
-        availableSpace: availableSpace,
-        estimatedWordsHeight: estimatedWordsHeight,
-        pageHeight: pageHeight,
-        borderMargin: borderMargin,
-        totalWordsRows: totalWordsRows,
+        currentY,
+        availableSpace,
+        estimatedWordsHeight,
+        actualWordsHeight,
+        pageHeight,
+        borderMargin,
+        totalWordsRows,
         selectedWordsLength: selectedWords.length
       });
       
@@ -664,212 +740,122 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
         estimatedWordsHeight,
         selectedWordsLength: selectedWords.length
       });
-      
-      if (estimatedWordsHeight > availableSpace) {
-        console.log(`Starting new page for words section due to space constraint. Available: ${availableSpace}mm, Needed: ${estimatedWordsHeight}mm`);
-        await sendSafariLog('Creating new page - space constraint', { availableSpace, estimatedWordsHeight });
+      // Improved logic: Only add a new page if space is insufficient
+      console.log('[DEBUG] Page break decision:', {
+        currentY,
+        actualWordsHeight,
+        availableSpace,
+        pageHeight,
+        borderMargin
+      });
+      if (actualWordsHeight > availableSpace + 5) { // Allow up to 5mm overflow
+        console.log(`Starting new page for words section due to space constraint. Available: ${availableSpace}mm, Needed: ${actualWordsHeight}mm`);
+        await sendSafariLog('Creating new page - space constraint', { availableSpace, actualWordsHeight });
         pdf.addPage();
         currentY = borderMargin + 15; // Start after border with some margin
         console.log('New page created, currentY reset to:', currentY);
-        
-        // Redraw border on new page
-        pdf.setDrawColor(60, 60, 60);
-        pdf.setLineWidth(1.0);
-        pdf.setLineDashPattern([], 0);
-        pdf.rect(borderMargin, borderMargin, pageWidth - 2 * borderMargin, pageHeight - 2 * borderMargin);
-      } else if (isSafariMobile || (isMobileDevice && selectedWords.length > 0)) {
-        // ALWAYS force new page for Safari mobile or any mobile device with words to prevent rendering issues
-        console.log(`FORCE: Starting new page for Safari mobile or mobile device with ${selectedWords.length} words`);
-        await sendSafariLog('FORCE creating new page - Safari mobile', { selectedWordsLength: selectedWords.length, isSafariMobile, isMobileDevice });
-        pdf.addPage();
-        currentY = borderMargin + 15; // Start after border with some margin
-        console.log('FORCED Mobile new page created, currentY reset to:', currentY);
-        
         // Redraw border on new page
         pdf.setDrawColor(60, 60, 60);
         pdf.setLineWidth(1.0);
         pdf.setLineDashPattern([], 0);
         pdf.rect(borderMargin, borderMargin, pageWidth - 2 * borderMargin, pageHeight - 2 * borderMargin);
       } else {
-        console.log(`Words section fits on current page. Available: ${availableSpace}mm, Needed: ${estimatedWordsHeight}mm`);
-        await sendSafariLog('Words section fits on current page', { availableSpace, estimatedWordsHeight });
-        // Add some spacing from the last verse's translation lines
-        currentY += 15;
-        console.log('After adding 15mm spacing, currentY is now:', currentY);
+        console.log(`Words section fits on current page. Available: ${availableSpace}mm, Needed: ${actualWordsHeight}mm`);
+        await sendSafariLog('Words section fits on current page', { availableSpace, actualWordsHeight });
+        // No extra spacing before word meanings section
+        console.log('No extra spacing added before word meanings. currentY is:', currentY);
       }
       
       // Function to create word canvas for clean grid
-      const createWordCanvas = (word) => {
-        try {
-          // Calculate optimal canvas dimensions based on font size and text content
-          const fontSize = baseFontSize; // Use reduced font size (56px)
-          const padding = 15; // Reduced padding for smaller font size
-          
-          // Create temporary canvas to measure text dimensions
-          const tempCanvas = document.createElement('canvas');
-          const tempCtx = tempCanvas.getContext('2d');
-          tempCtx.font = `${fontSize}px "QuranFont", "Noto Sans Arabic", Arial, sans-serif`;
-          tempCtx.direction = 'rtl';
-          
-          // Measure text width
-          const textMetrics = tempCtx.measureText(word);
-          const textWidth = textMetrics.width;
-          
-          // Calculate optimal canvas dimensions - prevent clipping
-          // More conservative sizing for Safari mobile
-          const isMobileDevice = typeof navigator !== 'undefined' && 
-            (/Mobi|Android|iPhone|iPad|Safari.*Mobile|webOS|BlackBerry|Windows Phone/i.test(navigator.userAgent) ||
-             (typeof window !== 'undefined' && window.screen && window.screen.width <= 768));
-          
-          // Even more conservative for Safari mobile
-          const isSafariMobile = typeof navigator !== 'undefined' && 
-            (/iPhone|iPad/i.test(navigator.userAgent) && /Safari/i.test(navigator.userAgent));
-          
-          // Ultra-conservative scale factors for Safari
-          let scaleFactor = 1.2; // Default
-          if (isSafariMobile) {
-            scaleFactor = 0.6; // Very conservative for Safari mobile
-          } else if (isMobileDevice) {
-            scaleFactor = 0.8; // Conservative for other mobile
-          }
-          
-          const canvasWidth = Math.max(textWidth + (padding * 2), 200) * scaleFactor;
-          const canvasHeight = fontSize * 1.8 * scaleFactor; // Even more reduced for Safari
-          
-          console.log(`Creating word canvas for "${word}": ${canvasWidth}x${canvasHeight}, mobile: ${isMobileDevice}, Safari: ${isSafariMobile}, scale: ${scaleFactor}`);
-          
-          const wordCanvas = document.createElement('canvas');
-          
-          // Very conservative canvas limits for Safari
-          const maxCanvasSize = isSafariMobile ? 1024 : 2048;
-          if (canvasWidth > maxCanvasSize || canvasHeight > maxCanvasSize) {
-            console.warn(`Canvas dimensions too large for Safari mobile, reducing from ${canvasWidth}x${canvasHeight} to max ${maxCanvasSize}`);
-            wordCanvas.width = Math.min(canvasWidth, maxCanvasSize);
-            wordCanvas.height = Math.min(canvasHeight, maxCanvasSize);
-          } else {
-            wordCanvas.width = canvasWidth;
-            wordCanvas.height = canvasHeight;
-          }
-          
-          const wordCtx = wordCanvas.getContext('2d', { alpha: false });
-          
-          if (!wordCtx) {
-            console.error('Failed to get 2D context for word canvas');
-            return null;
-          }
-          
-          // Enable high-quality rendering
-          wordCtx.imageSmoothingEnabled = true;
-          wordCtx.imageSmoothingQuality = 'high';
-          
-          // Set white background
-          wordCtx.fillStyle = 'white';
-          wordCtx.fillRect(0, 0, wordCanvas.width, wordCanvas.height);
-          
-          // Configure text style for Arabic word - RTL alignment with calculated font size
-          wordCtx.fillStyle = 'black';
-          wordCtx.textAlign = 'right'; // Right align for RTL text
-          wordCtx.textBaseline = 'middle';
-          wordCtx.font = `${fontSize}px "QuranFont", "Noto Sans Arabic", Arial, sans-serif`;
-          wordCtx.direction = 'rtl';
-          
-          // Draw the word aligned to the right with calculated padding
-          wordCtx.fillText(word, wordCanvas.width - padding, wordCanvas.height / 2);
-          
-          return wordCanvas;
-        } catch (error) {
-          console.error('Error creating word canvas:', error);
-          return null;
-        }
-      };
+      // ...existing code...
       
       // Process words in pairs (2 words per row for clean 4-column layout)
       console.log('Starting word processing loop with currentY:', currentY);
+      await sendSafariLog('Word meanings rendering start', { currentY });
       for (let i = 0; i < selectedWords.length; i += wordsPerRow) {
         // Robust currentY validation for Safari compatibility
         if (isNaN(currentY) || currentY < borderMargin || currentY > pageHeight - borderMargin) {
           console.error('Invalid currentY detected, resetting:', currentY);
           currentY = borderMargin + 20; // Reset to safe value
         }
-        
-        console.log(`Processing word row ${i / wordsPerRow + 1} at currentY: ${currentY}`);
-        
-        // Check if we need a new page - more conservative for Safari
-        const spaceNeeded = wordRowHeight + meaningRowHeight + rowSpacing + 20; // Buffer for Safari
-        if (currentY + spaceNeeded > pageHeight - borderMargin - 10) {
-          console.log(`Creating new page for words: currentY (${currentY}) + spaceNeeded (${spaceNeeded}) > pageHeight limit (${pageHeight - borderMargin - 10})`);
+
+        const rowWords = selectedWords.slice(i, i + wordsPerRow);
+        // Calculate actual row height for this pair
+        let maxRowHeight = 0;
+        rowWords.forEach(word => {
+          const wordCanvas = createWordCanvas(word);
+          if (wordCanvas) {
+            maxRowHeight = Math.max(maxRowHeight, (wordCanvas.height * columnWidth) / wordCanvas.width);
+          }
+        });
+        const spaceNeeded = maxRowHeight + meaningRowHeight + rowSpacing;
+
+        console.log(`Processing word row ${i / wordsPerRow + 1} at currentY: ${currentY}, spaceNeeded: ${spaceNeeded}`);
+
+        // Check if we need a new page (strictly match availableSpace logic)
+        const pageLimit = pageHeight - borderMargin;
+        console.log('[DEBUG] Rendering loop page break check:', {
+          currentY,
+          spaceNeeded,
+          pageLimit,
+          willBreak: currentY + spaceNeeded > pageLimit + 5 // Allow up to 5mm overflow
+        });
+        if (currentY + spaceNeeded > pageLimit + 5) {
+          console.log(`Creating new page for words: currentY (${currentY}) + spaceNeeded (${spaceNeeded}) > pageLimit (${pageLimit} + 5)`);
           pdf.addPage();
-          currentY = borderMargin + 15; // Consistent with other new page logic
+          currentY = borderMargin + 15;
           console.log('New page created for words, currentY reset to:', currentY);
-          
           // Redraw border on new page
           pdf.setDrawColor(60, 60, 60);
           pdf.setLineWidth(1.0);
           pdf.setLineDashPattern([], 0);
           pdf.rect(borderMargin, borderMargin, pageWidth - 2 * borderMargin, pageHeight - 2 * borderMargin);
         }
-        
-        const rowWords = selectedWords.slice(i, i + wordsPerRow);
-        console.log(`Processing words:`, rowWords.map(w => w.substring(0, 10) + '...'), 'at currentY:', currentY);
-        
+
         // Add words in their respective columns
         rowWords.forEach((word, wordIndex) => {
           try {
             // Calculate word column position - RTL layout: first column is rightmost (column 3)
             const totalWordIndex = i + wordIndex;
-            // For RTL: 0,2,4,6,8,10 -> column 3 (rightmost/first); 1,3,5,7,9 -> column 1 (leftmost/second)
             const isEvenIndex = totalWordIndex % 2 === 0;
-            const wordColumnIndex = isEvenIndex ? 3 : 1; // Even indices go to column 3 (rightmost), odd indices go to column 1
-            
-            // Add word in its column with coordinate validation
+            const wordColumnIndex = isEvenIndex ? 3 : 1;
             const wordCanvas = createWordCanvas(word);
-            
             if (!wordCanvas) {
               console.error(`Failed to create canvas for word: ${word}`);
-              return; // Skip this word if canvas creation failed
+              return;
             }
-            
             const wordImgData = wordCanvas.toDataURL('image/png', 1.0);
-            const wordImgWidth = columnWidth - 2; // Very minimal margin for maximum tightness
+            const wordImgWidth = columnWidth - 2;
             const wordImgHeight = (wordCanvas.height * wordImgWidth) / wordCanvas.width;
-            const wordXPos = 20 + (wordColumnIndex * columnWidth); // Centered positioning with equal margins
-            
-            // Enhanced coordinate validation for Safari
+            const wordXPos = 20 + (wordColumnIndex * columnWidth);
             if (isNaN(wordXPos) || isNaN(currentY) || isNaN(wordImgWidth) || isNaN(wordImgHeight) ||
                 wordXPos < 0 || currentY < 0 || wordImgWidth <= 0 || wordImgHeight <= 0) {
-              console.error('Invalid coordinates for word:', { 
-                word, 
-                wordXPos, 
-                currentY, 
-                wordImgWidth, 
+              console.error('Invalid coordinates for word:', {
+                word,
+                wordXPos,
+                currentY,
+                wordImgWidth,
                 wordImgHeight,
                 columnWidth,
-                wordColumnIndex 
+                wordColumnIndex
               });
               return;
             }
-            
             console.log(`Adding word "${word}" at position:`, { x: wordXPos, y: currentY, width: wordImgWidth, height: wordImgHeight });
-            
-            // Add comprehensive error handling for Safari mobile
             try {
               pdf.addImage(wordImgData, 'PNG', wordXPos, currentY, wordImgWidth, wordImgHeight, undefined, 'FAST');
               console.log(`✅ Successfully added word "${word}" to PDF`);
             } catch (pdfError) {
               console.error(`❌ Failed to add word "${word}" to PDF:`, pdfError);
-              // Try alternative approach for Safari
               try {
                 pdf.addImage(wordImgData, 'PNG', wordXPos, currentY, wordImgWidth, wordImgHeight, undefined, 'NONE');
                 console.log(`✅ Successfully added word "${word}" to PDF with NONE compression`);
               } catch (fallbackError) {
                 console.error(`❌ Complete failure adding word "${word}":`, fallbackError);
-                return; // Skip this word completely
+                return;
               }
             }
-            
-            // Clean up canvas for Safari memory management
             if (isMobileDevice || isSafariMobile) {
-              // More aggressive cleanup for mobile Safari
               try {
                 wordCanvas.width = 1;
                 wordCanvas.height = 1;
@@ -882,27 +868,20 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
                 console.warn('Canvas cleanup failed:', cleanupError);
               }
             }
-            
           } catch (error) {
             console.error(`Error processing word "${word}":`, error);
-            // Continue with next word instead of breaking the entire loop
           }
         });
-        
-        currentY += wordRowHeight;
-        console.log('After adding wordRowHeight, currentY is now:', currentY);
-        
-        // Add empty space for meanings in columns 0 and 2 (meaning columns on the left)
-        currentY += 2; // Very minimal vertical spacing with optimized canvas
-        console.log('After adding meaning space, currentY is now:', currentY);
-        
-        currentY += rowSpacing; // Very minimal space before next word pair
+
+        currentY += maxRowHeight;
+        console.log('After adding maxRowHeight, currentY is now:', currentY);
+        currentY += meaningRowHeight;
+        console.log('After adding meaningRowHeight, currentY is now:', currentY);
+        currentY += rowSpacing;
         console.log('After adding rowSpacing, currentY is now:', currentY);
-        
-        // Validate currentY after each increment for Safari
         if (isNaN(currentY) || currentY < 0) {
           console.error('currentY became invalid during loop:', currentY);
-          currentY = borderMargin + 20; // Reset to safe value
+          currentY = borderMargin + 20;
         }
       }
       
