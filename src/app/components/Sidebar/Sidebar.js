@@ -177,8 +177,8 @@ export const Sidebar = ({ onPreferencesChange, fontSize, onFontSizeChange, isOpe
 
   const getDisplayDate = () => {
     if (calendarType === 'hijri' && hijriDate) {
-      // Format Hijri date for display
-      const monthNames = ['Muharram', 'Safar', "Rabi' I", "Rabi' II", 'Jumada I', 'Jumada II', 'Rajab', "Sha'ban", 'Ramadan', 'Shawwal', "Dhu al-Qi'dah", 'Dhu al-Hijjah'];
+      // Format Hijri date for display using localized month names
+      const monthNames = t('hijriMonths');
       const monthName = monthNames[hijriDate.month - 1];
       return `${hijriDate.day} ${monthName} ${hijriDate.year} AH`;
     } else {
@@ -195,11 +195,11 @@ export const Sidebar = ({ onPreferencesChange, fontSize, onFontSizeChange, isOpe
       {/* Sidebar Panel */}
       <aside className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
         <div className={styles.sidebarContent}>
-          <h2 className={styles.title}>Settings</h2>
+          <h2 className={styles.title}>{t('settings')}</h2>
           
           <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
             <div className={styles.formGroup}>
-              <label htmlFor="className">Class Name</label>
+              <label htmlFor="className">{t('className')}</label>
               <input
                 type="text"
                 id="className"
@@ -207,13 +207,13 @@ export const Sidebar = ({ onPreferencesChange, fontSize, onFontSizeChange, isOpe
                 value={formData.className}
                 onChange={handleInputChange}
                 className={styles.input}
-                placeholder="Enter class name"
+                placeholder={t('placeholders.className')}
                 autoComplete="off"
               />
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="masjidName">Masjid Name</label>
+              <label htmlFor="masjidName">{t('masjidName')}</label>
               <input
                 type="text"
                 id="masjidName"
@@ -221,13 +221,13 @@ export const Sidebar = ({ onPreferencesChange, fontSize, onFontSizeChange, isOpe
                 value={formData.masjidName}
                 onChange={handleInputChange}
                 className={styles.input}
-                placeholder="Enter masjid name"
+                placeholder={t('placeholders.masjidName')}
                 autoComplete="off"
               />
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="pageSize">Page Size</label>
+              <label htmlFor="pageSize">{t('pageSize')}</label>
               <select
                 id="pageSize"
                 name="pageSize"
@@ -235,16 +235,16 @@ export const Sidebar = ({ onPreferencesChange, fontSize, onFontSizeChange, isOpe
                 onChange={handleInputChange}
                 className={styles.input}
               >
-                <option value="a4">A4 (210 × 297 mm)</option>
-                <option value="a3">A3 (297 × 420 mm)</option>
-                <option value="a5">A5 (148 × 210 mm)</option>
-                <option value="letter">Letter (8.5 × 11 in)</option>
-                <option value="legal">Legal (8.5 × 14 in)</option>
+                <option value="a4">{t('pageSizes.a4')}</option>
+                <option value="a3">{t('pageSizes.a3')}</option>
+                <option value="a5">{t('pageSizes.a5')}</option>
+                <option value="letter">{t('pageSizes.letter')}</option>
+                <option value="legal">{t('pageSizes.legal')}</option>
               </select>
             </div>
 
             <div className={styles.formGroup}>
-              <label>Font Size</label>
+              <label>{t('fontSize')}</label>
               <div className={styles.fontControls}>
                 <button 
                   type="button"
@@ -265,7 +265,7 @@ export const Sidebar = ({ onPreferencesChange, fontSize, onFontSizeChange, isOpe
             </div>
 
             <div className={styles.formGroup}>
-              <label>Date Settings</label>
+              <label>{t('dateSettings')}</label>
               <div className={styles.datePickerContainer}>
                 <div className={styles.calendarTypeSelector}>
                   <button 
@@ -273,14 +273,14 @@ export const Sidebar = ({ onPreferencesChange, fontSize, onFontSizeChange, isOpe
                     className={`${styles.calendarButton} ${calendarType === 'gregorian' ? styles.active : ''}`}
                     onClick={() => handleCalendarTypeChange('gregorian')}
                   >
-                    Gregorian
+                    {t('gregorian')}
                   </button>
                   <button 
                     type="button"
                     className={`${styles.calendarButton} ${calendarType === 'hijri' ? styles.active : ''}`}
                     onClick={() => handleCalendarTypeChange('hijri')}
                   >
-                    Hijri
+                    {t('hijri')}
                   </button>
                 </div>
                 
@@ -300,7 +300,7 @@ export const Sidebar = ({ onPreferencesChange, fontSize, onFontSizeChange, isOpe
                       <HijriDatePicker
                         value={hijriDate}
                         onChange={handleHijriDateChange}
-                        placeholder="Select Hijri date"
+                        placeholder={t('selectHijriDate')}
                       />
                     </div>
                     <div className={styles.dateDisplay}>

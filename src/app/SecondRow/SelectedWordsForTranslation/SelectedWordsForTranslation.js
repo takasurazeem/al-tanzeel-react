@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import styles from './styles.module.css';
 import sharedStyles from '../../shared/styles/shared.module.css';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export const SelectedWordsForTranslation = ({ 
   selectedWords,
   onRemoveWord,
   fontSize 
 }) => {
+  const { t } = useLanguage();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -33,10 +35,10 @@ export const SelectedWordsForTranslation = ({
     <div className={`${styles.column} ${isCollapsed && isMobile ? styles.collapsed : ''}`}>
       <div className={styles.header}>
         <div className={styles.headerTitle}>
-          <h3 className={sharedStyles.columnTitle}>Selected Words</h3>
+          <h3 className={sharedStyles.columnTitle}>{t('selectedWords')}</h3>
           {selectedWords.length > 0 && (
             <span className={styles.selectedInfo}>
-              {selectedWords.length} word{selectedWords.length !== 1 ? 's' : ''} selected
+              {selectedWords.length} {selectedWords.length === 1 ? t('wordSelected') : t('wordsSelected')}
             </span>
           )}
         </div>
@@ -44,7 +46,7 @@ export const SelectedWordsForTranslation = ({
           <button 
             className={styles.toggleButton}
             onClick={handleToggle}
-            aria-label={isCollapsed ? 'Expand' : 'Collapse'}
+            aria-label={isCollapsed ? t('expand') : t('collapse')}
           >
             {isCollapsed ? '▼' : '▲'}
           </button>
