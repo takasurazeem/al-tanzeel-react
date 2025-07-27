@@ -33,7 +33,7 @@ export default function Home() {
   useEffect(() => {
     const loadChapters = async () => {
       try {
-        const response = await fetch('/Quran_ur.json');
+        const response = await fetch('Quran_ur.json');
         const data = await response.json();
         setChapters(data);
       } catch (error) {

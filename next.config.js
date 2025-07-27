@@ -8,8 +8,8 @@ const nextConfig = {
   },
   // Ensure proper asset handling
   trailingSlash: true,
-  // Base path for GitHub Pages (only in production)
-  ...(process.env.NODE_ENV === 'production' && {
+  // Base path for GitHub Pages (detected via GITHUB_PAGES env var)
+  ...(process.env.GITHUB_PAGES && {
     basePath: '/al-tanzeel-react',
     assetPrefix: '/al-tanzeel-react',
   }),
