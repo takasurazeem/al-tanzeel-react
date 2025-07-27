@@ -620,8 +620,8 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
       const columnWidth = (pageWidth - 40) / columnsPerRow; // Smaller columns for tighter spacing
       const baseFontSize = 56; // Reduced from 60px to 56px (4 points smaller)
       const wordRowHeight = (baseFontSize * 1.05) * 0.3528; // Much tighter - reduced from 1.2 to 1.05
-      const meaningRowHeight = 10; // Reduced height for meaning lines section
-      const rowSpacing = 0.5; // Even more minimal space between word-meaning pairs
+      const meaningRowHeight = 3; // Further reduced height for meaning lines section
+      const rowSpacing = 0; // Further reduced space between word-meaning pairs
 
       // Hoist createWordCanvas above its first usage
       const createWordCanvas = (word) => {
