@@ -69,7 +69,11 @@ export const translations = {
     placeholders: {
       className: "Enter class name",
       masjidName: "Enter masjid name"
-    }
+    },
+    
+    // Calendar and date picker
+    today: "Today",
+    selectMonth: "Select Month"
   },
   
   ur: {
@@ -142,7 +146,11 @@ export const translations = {
     placeholders: {
       className: "کلاس کا نام درج کریں",
       masjidName: "مسجد کا نام درج کریں"
-    }
+    },
+    
+    // Calendar and date picker
+    today: "آج",
+    selectMonth: "مہینہ منتخب کریں"
   }
 };
 

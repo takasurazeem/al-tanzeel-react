@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from 'react';
 import styles from './styles.module.css';
 import { gregorianToHijri, hijriToGregorian } from '../../utils/hijriCalendar';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const HIJRI_MONTHS = [
   { ar: 'محرم', en: 'Muharram', ur: 'محرم' },
@@ -19,6 +20,7 @@ const HIJRI_MONTHS = [
 ];
 
 export function HijriDatePicker({ value, onChange, placeholder = "Select Hijri Date" }) {
+  const { t, language } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState(value?.day || '');
   const [selectedMonth, setSelectedMonth] = useState(value?.month || '');
@@ -128,7 +130,8 @@ export function HijriDatePicker({ value, onChange, placeholder = "Select Hijri D
 
   const formatDisplayValue = () => {
     if (selectedDay && selectedMonth) {
-      const monthName = HIJRI_MONTHS[selectedMonth - 1]?.en || '';
+      const hijriMonths = t('hijriMonths');
+      const monthName = hijriMonths[selectedMonth - 1] || '';
       return `${selectedDay} ${monthName} ${selectedYear} AH`;
     }
     return placeholder;
@@ -159,12 +162,16 @@ export function HijriDatePicker({ value, onChange, placeholder = "Select Hijri D
               onChange={(e) => handleMonthChange(e.target.value)}
               className={styles.monthSelect}
             >
-              <option value="">Select Month</option>
-              {HIJRI_MONTHS.map((month, index) => (
-                <option key={index + 1} value={index + 1}>
-                  {month.en}
-                </option>
-              ))}
+              <option value="">{t('selectMonth')}</option>
+              {HIJRI_MONTHS.map((month, index) => {
+                const hijriMonths = t('hijriMonths');
+                const monthName = hijriMonths[index] || month.en;
+                return (
+                  <option key={index + 1} value={index + 1}>
+                    {monthName}
+                  </option>
+                );
+              })}
             </select>
           </div>
 
@@ -172,7 +179,7 @@ export function HijriDatePicker({ value, onChange, placeholder = "Select Hijri D
           {selectedMonth && (
             <div className={styles.calendar}>
               <div className={styles.calendarHeader}>
-                {HIJRI_MONTHS[selectedMonth - 1]?.en} {selectedYear} AH
+                {t('hijriMonths')[selectedMonth - 1]} {selectedYear} AH
               </div>
               <div className={styles.daysGrid}>
                 {generateCalendarDays().map(({ day, disabled }) => (
@@ -204,7 +211,7 @@ export function HijriDatePicker({ value, onChange, placeholder = "Select Hijri D
                 setIsOpen(false);
               }}
             >
-              Today
+              {t('today')}
             </button>
           </div>
         </div>
