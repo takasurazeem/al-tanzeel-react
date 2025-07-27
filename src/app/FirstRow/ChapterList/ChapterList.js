@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import styles from './styles.module.css';
 import sharedStyles from '../../shared/styles/shared.module.css';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export const ChapterList = ({ chapters, selectedChapter, onChapterSelect, searchTerm, onSearchChange }) => {
+  const { t } = useLanguage();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -38,7 +40,7 @@ export const ChapterList = ({ chapters, selectedChapter, onChapterSelect, search
     <div className={`${styles.chapterColumn} ${isCollapsed && isMobile ? styles.collapsed : ''}`}>
       <div className={styles.header}>
         <div className={styles.headerTitle}>
-          <h3 className={sharedStyles.columnTitle}>Select Surah</h3>
+          <h3 className={sharedStyles.columnTitle}>{t('selectSurah')}</h3>
           {selectedChapter && (
             <span className={styles.selectedInfo}>
               {selectedChapter.id}. {selectedChapter.name} ({selectedChapter.transliteration})
@@ -50,7 +52,7 @@ export const ChapterList = ({ chapters, selectedChapter, onChapterSelect, search
           <button 
             className={styles.toggleButton}
             onClick={toggleCollapse}
-            aria-label={isCollapsed ? "Expand surah list" : "Collapse surah list"}
+            aria-label={isCollapsed ? t('expandSurahList') : t('collapseSurahList')}
           >
             {isCollapsed ? '▼' : '▲'}
           </button>
@@ -60,7 +62,7 @@ export const ChapterList = ({ chapters, selectedChapter, onChapterSelect, search
       <div className={`${styles.content} ${isCollapsed && isMobile ? styles.contentCollapsed : ''}`}>
         <input
           type="text"
-          placeholder="Search by Surah number or name"
+          placeholder={t('searchSurahPlaceholder')}
           value={searchTerm}
           onChange={onSearchChange}
           className={styles.searchInput}

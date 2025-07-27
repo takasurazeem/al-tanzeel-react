@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import styles from '../../shared/styles/verseList.module.css';
 import sharedStyles from '../../shared/styles/shared.module.css';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export const VerseList = ({ verses, fontSize, onVerseSelect, selectedVerses, searchTerm, onSearchChange, className = '' }) => {
+  const { t } = useLanguage();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -28,10 +30,10 @@ export const VerseList = ({ verses, fontSize, onVerseSelect, selectedVerses, sea
     <div className={`${styles.column} ${isCollapsed && isMobile ? styles.collapsed : ''} ${className}`.trim()}>
       <div className={styles.header}>
         <div className={styles.headerTitle}>
-          <h3 className={sharedStyles.columnTitle}>Select Verses</h3>
+          <h3 className={sharedStyles.columnTitle}>{t('verseList')}</h3>
           {selectedCount > 0 && (
             <span className={styles.selectedInfo}>
-              {selectedCount} verse{selectedCount !== 1 ? 's' : ''} selected
+              {selectedCount} {selectedCount === 1 ? t('verseSelected') : t('versesSelected')}
             </span>
           )}
         </div>
@@ -40,7 +42,7 @@ export const VerseList = ({ verses, fontSize, onVerseSelect, selectedVerses, sea
           <button 
             className={styles.toggleButton}
             onClick={toggleCollapse}
-            aria-label={isCollapsed ? "Expand verse list" : "Collapse verse list"}
+            aria-label={isCollapsed ? t('expandVerseList') : t('collapseVerseList')}
           >
             {isCollapsed ? '▼' : '▲'}
           </button>
@@ -50,7 +52,7 @@ export const VerseList = ({ verses, fontSize, onVerseSelect, selectedVerses, sea
       <div className={`${styles.content} ${isCollapsed && isMobile ? styles.contentCollapsed : ''}`}>
         <input
           type="text"
-          placeholder="Search verse by number..."
+          placeholder={t('searchVersePlaceholder')}
           value={searchTerm}
           onChange={onSearchChange}
           className={styles.searchInput}

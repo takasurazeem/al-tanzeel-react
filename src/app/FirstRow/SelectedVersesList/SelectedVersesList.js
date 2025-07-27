@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import styles from './styles.module.css';
 import sharedStyles from '../../shared/styles/shared.module.css';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export const SelectedVersesList = ({ verses, fontSize, onRemoveVerse, className = '' }) => {
+  const { t } = useLanguage();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -33,10 +35,10 @@ export const SelectedVersesList = ({ verses, fontSize, onRemoveVerse, className 
     <div className={`${styles.column} ${isCollapsed && isMobile ? styles.collapsed : ''} ${className}`.trim()} style={{ fontSize: `${fontSize}px` }}>
       <div className={styles.header}>
         <div className={styles.headerTitle}>
-          <h3 className={sharedStyles.columnTitle}>Selected Verses</h3>
+          <h3 className={sharedStyles.columnTitle}>{t('selectedVerses')}</h3>
           {selectedCount > 0 && (
             <span className={styles.selectedInfo}>
-              {selectedCount} verse{selectedCount !== 1 ? 's' : ''} selected
+              {selectedCount} {selectedCount === 1 ? t('verseSelected') : t('versesSelected')}
             </span>
           )}
         </div>
@@ -45,7 +47,7 @@ export const SelectedVersesList = ({ verses, fontSize, onRemoveVerse, className 
           <button 
             className={styles.toggleButton}
             onClick={toggleCollapse}
-            aria-label={isCollapsed ? "Expand selected verses" : "Collapse selected verses"}
+            aria-label={isCollapsed ? t('expandSelectedVerses') : t('collapseSelectedVerses')}
           >
             {isCollapsed ? '▼' : '▲'}
           </button>
