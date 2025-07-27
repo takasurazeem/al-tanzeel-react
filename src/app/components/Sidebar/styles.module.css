@@ -11,6 +11,7 @@
   transform: translateX(100%); /* Changed from -100% */
   transition: transform 0.3s ease;
   z-index: 1001;
+  overflow: hidden; /* Prevent scrollbar on the main sidebar container */
 }
 
 .sidebar.open {
@@ -21,6 +22,49 @@
   padding: 2rem;
   padding-top: 4rem;
   color: #ffffff; /* Light text for dark theme */
+  height: 100vh;
+  overflow-y: auto; /* Enable vertical scrolling */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+  /* Custom scrollbar styling for dark theme */
+  scrollbar-width: thin;
+  scrollbar-color: #4a4a4a #1a1a1a;
+  /* Smooth scrolling behavior */
+  scroll-behavior: smooth;
+  /* Better touch scrolling on mobile */
+  -webkit-overflow-scrolling: touch;
+  /* Subtle shadows to indicate scrollability */
+  background: 
+    /* Top shadow */
+    linear-gradient(to bottom, #1a1a1a 0%, transparent 20px),
+    /* Bottom shadow */
+    linear-gradient(to top, #1a1a1a 0%, transparent 20px),
+    /* Main background */
+    #1a1a1a;
+  background-attachment: local, local, scroll;
+}
+
+/* Custom scrollbar for WebKit browsers (Chrome, Safari, Edge) */
+.sidebarContent::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebarContent::-webkit-scrollbar-track {
+  background: #1a1a1a;
+  border-radius: 3px;
+}
+
+.sidebarContent::-webkit-scrollbar-thumb {
+  background: #4a4a4a;
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+
+.sidebarContent::-webkit-scrollbar-thumb:hover {
+  background: #5a5a5a;
+}
+
+.sidebarContent::-webkit-scrollbar-corner {
+  background: #1a1a1a;
 }
 
 .title {
@@ -34,6 +78,7 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  padding-bottom: 2rem; /* Add extra padding at bottom for scrolling */
 }
 
 .formGroup {
@@ -258,6 +303,23 @@
 
 /* Mobile responsiveness */
 @media (max-width: 480px) {
+  .sidebar {
+    width: 280px; /* Slightly smaller on mobile */
+  }
+  
+  .sidebarContent {
+    padding: 1.5rem;
+    padding-top: 3rem;
+    /* Better mobile scrolling performance */
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  .form {
+    gap: 1.2rem;
+    padding-bottom: 3rem; /* More bottom padding on mobile */
+  }
+  
   .hijriDatePickerWrapper {
     width: 100%;
   }
