@@ -54,6 +54,8 @@ jobs:
         
       - name: Build Al-Tanzeel React App
         run: npm run build
+        env:
+          GITHUB_PAGES: true
         
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
