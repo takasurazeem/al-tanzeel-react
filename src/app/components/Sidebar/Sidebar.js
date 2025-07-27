@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import styles from './styles.module.css';
 import { HijriDatePicker } from '../HijriDatePicker/HijriDatePicker';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { 
   gregorianToHijri, 
   hijriToGregorian, 
@@ -11,6 +12,7 @@ import {
 } from '../../utils/hijriCalendar';
 
 export const Sidebar = ({ onPreferencesChange, fontSize, onFontSizeChange, isOpen, onToggle }) => {
+  const { t, language } = useLanguage();
   const [formData, setFormData] = useState({
     className: '',
     masjidName: '',

@@ -9,8 +9,10 @@ import { WordsFromSelectedVerses } from './SecondRow/WordsFromSelectedVerses/Wor
 import { SelectedWordsForTranslation } from './SecondRow/SelectedWordsForTranslation/SelectedWordsForTranslation';
 import { generateDecoratePDF } from './utils/pdfGenerator';
 import { Sidebar } from './components/Sidebar/Sidebar';
+import { useLanguage } from './contexts/LanguageContext';
 
 export default function Home() {
+  const { language, changeLanguage, t, isRTL } = useLanguage();
   const [chapters, setChapters] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedChapter, setSelectedChapter] = useState(null);
@@ -82,7 +84,7 @@ export default function Home() {
   };
 
   const handleReset = () => {
-    if (window.confirm('Are you sure you want to reset all selections?')) {
+    if (window.confirm(t('resetConfirmation'))) {
       setSelectedChapter(null);
       setSelectedVerses([]);
       setSearchTerm('');
@@ -92,8 +94,8 @@ export default function Home() {
 
   const getDisplayDate = () => {
     if (preferences.calendarType === 'hijri' && preferences.hijriDate) {
-      // For UI display, use English
-      const monthNames = ['Muharram', 'Safar', "Rabi' I", "Rabi' II", 'Jumada I', 'Jumada II', 'Rajab', "Sha'ban", 'Ramadan', 'Shawwal', "Dhu al-Qi'dah", 'Dhu al-Hijjah'];
+      // For UI display, use localized month names
+      const monthNames = t('hijriMonths');
       const monthName = monthNames[preferences.hijriDate.month - 1];
       return `${preferences.hijriDate.day} ${monthName} ${preferences.hijriDate.year} AH`;
     } else {
@@ -144,7 +146,7 @@ export default function Home() {
   };
 
   return (
-    <div className={styles.container}>
+    <div className={`${styles.container} ${isRTL ? styles.rtl : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
       <Sidebar 
         onPreferencesChange={setPreferences} 
         fontSize={fontSize}
@@ -158,27 +160,42 @@ export default function Home() {
             className={styles.resetButton}
             onClick={handleReset}
           >
-            Reset
+            {t('reset')}
           </button>
           <button
             className={styles.pdfButton}
             onClick={handleGeneratePDF}
           >
-            Generate PDF
+            {t('generatePdf')}
           </button>
+          {/* Language Switcher */}
+          <div className={styles.languageSwitcher}>
+            <button 
+              className={`${styles.langButton} ${language === 'en' ? styles.active : ''}`}
+              onClick={() => changeLanguage('en')}
+            >
+              EN
+            </button>
+            <button 
+              className={`${styles.langButton} ${language === 'ur' ? styles.active : ''}`}
+              onClick={() => changeLanguage('ur')}
+            >
+              اردو
+            </button>
+          </div>
         </div>
         <div className={styles.rightControls}>
           <button 
             className={styles.menuButton}
             onClick={() => handleSidebarToggle()}
-            aria-label="Toggle Settings"
+            aria-label={t('toggleSettings')}
           >
             <span className={`${styles.menuIcon} ${sidebarOpen ? styles.open : ''}`} />
           </button>
         </div>
       </div>
       {/* Title Row */}
-      <h2 className={styles.rowTitle}>Verses for Translation</h2>
+      <h2 className={styles.rowTitle}>{t('versesForTranslation')}</h2>
       {/* First Row - Remove duplicate title */}
       <div className={styles.grid}>
         <ChapterList
@@ -205,7 +222,7 @@ export default function Home() {
         />
       </div>
       {/* Second Row */}
-      <h2 className={`${styles.rowTitle} ${!selectedChapter ? styles.hiddenOnMobileWhenNoChapter : ''}`}>Verses for Words Meanings</h2>
+      <h2 className={`${styles.rowTitle} ${!selectedChapter ? styles.hiddenOnMobileWhenNoChapter : ''}`}>{t('versesForWordsMeanings')}</h2>
       <div className={`${styles.grid} ${!selectedChapter ? styles.hiddenOnMobileWhenNoChapter : ''}`}>
         <SelectVersesForWordsMeanings
           verses={filteredVerses}
