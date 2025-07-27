@@ -557,6 +557,11 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
     // Add selected words for meanings below the verses in simple grid layout
     if (selectedWords && selectedWords.length > 0) {
       console.log(`Adding ${selectedWords.length} selected words for meanings in clean grid layout`);
+      console.log('Current device info:', {
+        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'Unknown',
+        isMobile: typeof window !== 'undefined' ? /Mobi|Android/i.test(navigator.userAgent) : false,
+        screenWidth: typeof window !== 'undefined' ? window.screen.width : 'Unknown'
+      });
       
       // Use the currentY from verses section or initialize if no verses
       if (selectedVerses && selectedVerses.length > 0) {
@@ -570,6 +575,12 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
         const nameFieldY = urduY + urduImgHeight + 8;
         const nameFieldHeight = 12;
         currentY = nameFieldY + nameFieldHeight + 20; // Start after name/date fields with more gap
+      }
+      
+      // Validate currentY before proceeding
+      if (isNaN(currentY) || currentY < 0) {
+        console.error('Invalid currentY detected:', currentY);
+        currentY = borderMargin + 100; // Safe fallback position
       }
       
       // Simple 4-column layout: Meaning | Word | Meaning | Word
@@ -593,11 +604,27 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
         availableSpace: availableSpace,
         estimatedWordsHeight: estimatedWordsHeight,
         pageHeight: pageHeight,
-        borderMargin: borderMargin
+        borderMargin: borderMargin,
+        totalWordsRows: totalWordsRows,
+        selectedWordsLength: selectedWords.length
       });
       
+      // Force new page for words section on mobile devices to avoid layout issues
+      const isMobileDevice = typeof navigator !== 'undefined' && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+      
       if (estimatedWordsHeight > availableSpace) {
-        console.log(`Words section needs ${estimatedWordsHeight}mm but only ${availableSpace}mm available. Starting new page.`);
+        console.log(`Starting new page for words section due to space constraint. Available: ${availableSpace}mm, Needed: ${estimatedWordsHeight}mm`);
+        pdf.addPage();
+        currentY = borderMargin + 15; // Start after border with some margin
+        
+        // Redraw border on new page
+        pdf.setDrawColor(60, 60, 60);
+        pdf.setLineWidth(1.0);
+        pdf.setLineDashPattern([], 0);
+        pdf.rect(borderMargin, borderMargin, pageWidth - 2 * borderMargin, pageHeight - 2 * borderMargin);
+      } else if (isMobileDevice && selectedWords.length > 2) {
+        // Force new page for mobile devices when there are more than 2 words to prevent rendering issues
+        console.log(`Starting new page for words section on mobile device with ${selectedWords.length} words`);
         pdf.addPage();
         currentY = borderMargin + 15; // Start after border with some margin
         
@@ -610,66 +637,85 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
         console.log(`Words section fits on current page. Available: ${availableSpace}mm, Needed: ${estimatedWordsHeight}mm`);
         // Add some spacing from the last verse's translation lines
         currentY += 15;
+        console.log('After adding 15mm spacing, currentY is now:', currentY);
       }
       
       // Function to create word canvas for clean grid
       const createWordCanvas = (word) => {
-        // Calculate optimal canvas dimensions based on font size and text content
-        const fontSize = baseFontSize; // Use reduced font size (60px)
-        const padding = 15; // Reduced padding for smaller font size
-        
-        // Create temporary canvas to measure text dimensions
-        const tempCanvas = document.createElement('canvas');
-        const tempCtx = tempCanvas.getContext('2d');
-        tempCtx.font = `${fontSize}px "QuranFont", "Noto Sans Arabic", Arial, sans-serif`;
-        tempCtx.direction = 'rtl';
-        
-        // Measure text width
-        const textMetrics = tempCtx.measureText(word);
-        const textWidth = textMetrics.width;
-        
-        // Calculate optimal canvas dimensions - prevent clipping
-        const canvasWidth = Math.max(textWidth + (padding * 2), 200); // Reduced minimum width for smaller font
-        const canvasHeight = fontSize * 2.5; // Increased to 150% extra height to completely prevent clipping
-        
-        const wordCanvas = document.createElement('canvas');
-        wordCanvas.width = canvasWidth;
-        wordCanvas.height = canvasHeight;
-        const wordCtx = wordCanvas.getContext('2d', { alpha: false });
-        
-        // Enable high-quality rendering
-        wordCtx.imageSmoothingEnabled = true;
-        wordCtx.imageSmoothingQuality = 'high';
-        
-        // Set white background
-        wordCtx.fillStyle = 'white';
-        wordCtx.fillRect(0, 0, wordCanvas.width, wordCanvas.height);
-        
-        // Configure text style for Arabic word - RTL alignment with calculated font size
-        wordCtx.fillStyle = 'black';
-        wordCtx.textAlign = 'right'; // Right align for RTL text
-        wordCtx.textBaseline = 'middle';
-        wordCtx.font = `${fontSize}px "QuranFont", "Noto Sans Arabic", Arial, sans-serif`;
-        wordCtx.direction = 'rtl';
-        
-        // Draw the word aligned to the right with calculated padding
-        wordCtx.fillText(word, wordCanvas.width - padding, wordCanvas.height / 2);
-        
-        return wordCanvas;
+        try {
+          // Calculate optimal canvas dimensions based on font size and text content
+          const fontSize = baseFontSize; // Use reduced font size (56px)
+          const padding = 15; // Reduced padding for smaller font size
+          
+          // Create temporary canvas to measure text dimensions
+          const tempCanvas = document.createElement('canvas');
+          const tempCtx = tempCanvas.getContext('2d');
+          tempCtx.font = `${fontSize}px "QuranFont", "Noto Sans Arabic", Arial, sans-serif`;
+          tempCtx.direction = 'rtl';
+          
+          // Measure text width
+          const textMetrics = tempCtx.measureText(word);
+          const textWidth = textMetrics.width;
+          
+          // Calculate optimal canvas dimensions - prevent clipping
+          // Reduce canvas size on mobile to prevent memory issues
+          const isMobileDevice = typeof navigator !== 'undefined' && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+          const scaleFactor = isMobileDevice ? 1.0 : 1.2; // Reduce scale factor on mobile
+          
+          const canvasWidth = Math.max(textWidth + (padding * 2), 200) * scaleFactor;
+          const canvasHeight = fontSize * 2.5 * scaleFactor;
+          
+          console.log(`Creating word canvas for "${word}": ${canvasWidth}x${canvasHeight}, mobile: ${isMobileDevice}`);
+          
+          const wordCanvas = document.createElement('canvas');
+          wordCanvas.width = canvasWidth;
+          wordCanvas.height = canvasHeight;
+          const wordCtx = wordCanvas.getContext('2d', { alpha: false });
+          
+          if (!wordCtx) {
+            console.error('Failed to get 2D context for word canvas');
+            return null;
+          }
+          
+          // Enable high-quality rendering
+          wordCtx.imageSmoothingEnabled = true;
+          wordCtx.imageSmoothingQuality = 'high';
+          
+          // Set white background
+          wordCtx.fillStyle = 'white';
+          wordCtx.fillRect(0, 0, wordCanvas.width, wordCanvas.height);
+          
+          // Configure text style for Arabic word - RTL alignment with calculated font size
+          wordCtx.fillStyle = 'black';
+          wordCtx.textAlign = 'right'; // Right align for RTL text
+          wordCtx.textBaseline = 'middle';
+          wordCtx.font = `${fontSize}px "QuranFont", "Noto Sans Arabic", Arial, sans-serif`;
+          wordCtx.direction = 'rtl';
+          
+          // Draw the word aligned to the right with calculated padding
+          wordCtx.fillText(word, wordCanvas.width - padding, wordCanvas.height / 2);
+          
+          return wordCanvas;
+        } catch (error) {
+          console.error('Error creating word canvas:', error);
+          return null;
+        }
       };
       
       // Process words in pairs (2 words per row for clean 4-column layout)
+      console.log('Starting word processing loop with currentY:', currentY);
       for (let i = 0; i < selectedWords.length; i += wordsPerRow) {
-        // Validate currentY before processing each row
-        if (isNaN(currentY) || currentY < 0) {
+        // Validate currentY before processing each row - only reset if truly invalid
+        if (isNaN(currentY) || currentY < 0 || currentY > pageHeight) {
           console.error('Invalid currentY before word row processing:', currentY);
-          currentY = borderMargin + 20; // Reset to safe value
+          currentY = borderMargin + 20; // Reset to safe value only if truly invalid
         }
         
-        // Check if we need a new page
-        if (currentY > pageHeight - 120) {
+        // Check if we need a new page - use smaller buffer since we calculated space above
+        if (currentY > pageHeight - 40) { // Reduced from 120 to 40 for more accurate page usage
+          console.log(`Creating new page for words: currentY (${currentY}) > pageHeight - 40 (${pageHeight - 40})`);
           pdf.addPage();
-          currentY = 20;
+          currentY = borderMargin + 15; // Consistent with other new page logic
           
           // Redraw border on new page
           pdf.setDrawColor(60, 60, 60);
@@ -683,34 +729,39 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
         
         // Add words in their respective columns
         rowWords.forEach((word, wordIndex) => {
-          // Calculate word column position - RTL layout: first column is rightmost (column 3)
-          const totalWordIndex = i + wordIndex;
-          // For RTL: 0,2,4,6,8,10 -> column 3 (rightmost/first); 1,3,5,7,9 -> column 1 (leftmost/second)
-          const isEvenIndex = totalWordIndex % 2 === 0;
-          const wordColumnIndex = isEvenIndex ? 3 : 1; // Even indices go to column 3 (rightmost), odd indices go to column 1
-          
-          // Add word in its column with coordinate validation
-          const wordCanvas = createWordCanvas(word);
-          const wordImgData = wordCanvas.toDataURL('image/png', 1.0);
-          const wordImgWidth = columnWidth - 2; // Very minimal margin for maximum tightness
-          const wordImgHeight = (wordCanvas.height * wordImgWidth) / wordCanvas.width;
-          const wordXPos = 20 + (wordColumnIndex * columnWidth); // Centered positioning with equal margins
-          
-          // Validate coordinates before adding image
-          if (isNaN(wordXPos) || isNaN(currentY) || isNaN(wordImgWidth) || isNaN(wordImgHeight)) {
-            console.error('Invalid coordinates for word image:', {
-              wordXPos: wordXPos,
-              currentY: currentY,
-              wordImgWidth: wordImgWidth,
-              wordImgHeight: wordImgHeight,
-              word: word,
-              wordIndex: wordIndex,
-              totalWordIndex: totalWordIndex
-            });
-            return; // Skip this word if coordinates are invalid
+          try {
+            // Calculate word column position - RTL layout: first column is rightmost (column 3)
+            const totalWordIndex = i + wordIndex;
+            // For RTL: 0,2,4,6,8,10 -> column 3 (rightmost/first); 1,3,5,7,9 -> column 1 (leftmost/second)
+            const isEvenIndex = totalWordIndex % 2 === 0;
+            const wordColumnIndex = isEvenIndex ? 3 : 1; // Even indices go to column 3 (rightmost), odd indices go to column 1
+            
+            // Add word in its column with coordinate validation
+            const wordCanvas = createWordCanvas(word);
+            
+            if (!wordCanvas) {
+              console.error(`Failed to create canvas for word: ${word}`);
+              return; // Skip this word if canvas creation failed
+            }
+            
+            const wordImgData = wordCanvas.toDataURL('image/png', 1.0);
+            const wordImgWidth = columnWidth - 2; // Very minimal margin for maximum tightness
+            const wordImgHeight = (wordCanvas.height * wordImgWidth) / wordCanvas.width;
+            const wordXPos = 20 + (wordColumnIndex * columnWidth); // Centered positioning with equal margins
+            
+            // Validate coordinates before adding to PDF
+            if (isNaN(wordXPos) || isNaN(currentY) || isNaN(wordImgWidth) || isNaN(wordImgHeight)) {
+              console.error('Invalid coordinates for word:', { word, wordXPos, currentY, wordImgWidth, wordImgHeight });
+              return;
+            }
+            
+            console.log(`Adding word "${word}" at position:`, { x: wordXPos, y: currentY, width: wordImgWidth, height: wordImgHeight });
+            
+            pdf.addImage(wordImgData, 'PNG', wordXPos, currentY, wordImgWidth, wordImgHeight, undefined, 'FAST');
+          } catch (error) {
+            console.error(`Error processing word "${word}":`, error);
+            // Continue with next word instead of breaking the entire loop
           }
-          
-          pdf.addImage(wordImgData, 'PNG', wordXPos, currentY, wordImgWidth, wordImgHeight, undefined, 'FAST');
         });
         
         currentY += wordRowHeight;
