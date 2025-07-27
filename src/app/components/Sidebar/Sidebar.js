@@ -45,6 +45,23 @@ export const Sidebar = ({ onPreferencesChange, fontSize, onFontSizeChange, isOpe
     }
   }, []);
 
+  // Handle Escape key to close sidebar
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key === 'Escape' && isOpen) {
+        onToggle();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen, onToggle]);
+
   // Save preferences to localStorage whenever they change
   const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
@@ -195,7 +212,18 @@ export const Sidebar = ({ onPreferencesChange, fontSize, onFontSizeChange, isOpe
       {/* Sidebar Panel */}
       <aside className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
         <div className={styles.sidebarContent}>
-          <h2 className={styles.title}>{t('settings')}</h2>
+          <div className={styles.header}>
+            <h2 className={styles.title}>{t('settings')}</h2>
+            <button
+              type="button"
+              className={styles.closeButton}
+              onClick={onToggle}
+              aria-label={t('closeSettings')}
+              title={t('closeSettings')}
+            >
+              ×
+            </button>
+          </div>
           
           <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
             <div className={styles.formGroup}>

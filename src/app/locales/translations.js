@@ -12,6 +12,7 @@ export const translations = {
     
     // Settings/Sidebar
     settings: "Settings",
+    closeSettings: "Close settings",
     className: "Class Name",
     masjidName: "Masjid Name",
     pageSize: "Page Size",
@@ -90,6 +91,7 @@ export const translations = {
     
     // Settings/Sidebar
     settings: "سیٹنگز",
+    closeSettings: "سیٹنگز بند کریں",
     className: "کلاس کا نام",
     masjidName: "مسجد کا نام",
     pageSize: "صفحہ کا سائز",
