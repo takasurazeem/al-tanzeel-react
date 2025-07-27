@@ -8,9 +8,11 @@ const nextConfig = {
   },
   // Ensure proper asset handling
   trailingSlash: true,
-  // Base path for GitHub Pages
-  basePath: '/al-tanzeel-react',
-  assetPrefix: '/al-tanzeel-react',
+  // Base path for GitHub Pages (only in production)
+  ...(process.env.NODE_ENV === 'production' && {
+    basePath: '/al-tanzeel-react',
+    assetPrefix: '/al-tanzeel-react',
+  }),
 };
 
 module.exports = nextConfig;
