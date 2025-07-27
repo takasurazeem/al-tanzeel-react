@@ -11,6 +11,7 @@ import { generateDecoratePDF } from './utils/pdfGenerator';
 import { Sidebar } from './components/Sidebar/Sidebar';
 import { useLanguage } from './contexts/LanguageContext';
 import { calculateTranslationLines } from './utils/lineCalculator';
+import { serverLogger } from './utils/serverLogger';
 
 export default function Home() {
   const { language, t, isRTL } = useLanguage();
@@ -33,17 +34,74 @@ export default function Home() {
   });
 
   useEffect(() => {
+    // Initialize server logging for mobile Safari debugging
+    if (typeof window !== 'undefined') {
+      console.log('🚀 Al-Tanzeel React app initialized with server logging');
+      serverLogger.safariLog('App initialization', {
+        userAgent: navigator.userAgent,
+        screenWidth: window.screen?.width,
+        screenHeight: window.screen?.height,
+        devicePixelRatio: window.devicePixelRatio
+      });
+    }
+    
     const loadChapters = async () => {
       try {
         const response = await fetch('Quran_ur.json');
         const data = await response.json();
         setChapters(data);
+        console.log('📖 Quran data loaded successfully');
       } catch (error) {
         console.error('Error loading chapters:', error);
       }
     };
     loadChapters();
   }, []);
+
+  // Dev mode effect - auto-select first chapter, all verses, and all words
+  useEffect(() => {
+    // Only run in development mode and when chapters are loaded
+    if (process.env.NODE_ENV === 'development' && chapters.length > 0) {
+      console.log('🔧 DEV MODE: Auto-selecting first chapter for regression testing');
+      
+      const firstChapter = chapters[0];
+      if (firstChapter) {
+        // Select the first chapter
+        setSelectedChapter(firstChapter);
+        console.log('🔧 DEV MODE: Selected first chapter:', firstChapter.transliteration);
+        
+        // Select all verses from the first chapter (with enhanced properties)
+        const allVersesWithLines = firstChapter.verses.map(verse => ({
+          ...verse,
+          translationLines: calculateTranslationLines(verse, preferences.pageSize || 'a4')
+        }));
+        
+        setSelectedVerses(allVersesWithLines);
+        setSecondRowSelectedVerses(firstChapter.verses);
+        console.log('🔧 DEV MODE: Selected all verses from first chapter:', allVersesWithLines.length, 'verses');
+        
+        // Extract and select all unique words from the first chapter
+        const allWords = firstChapter.verses
+          .map(verse => verse.text.split(' '))
+          .flat()
+          .filter(word => word.trim() !== ''); // Remove empty strings
+        
+        const uniqueWords = [...new Set(allWords)];
+        setSelectedWords(uniqueWords);
+        console.log('🔧 DEV MODE: Selected all unique words from first chapter:', uniqueWords.length, 'words');
+        
+        // Log dev mode completion
+        serverLogger.safariLog('DEV MODE Auto-selection completed', {
+          chapterSelected: firstChapter.transliteration,
+          versesSelected: allVersesWithLines.length,
+          wordsSelected: uniqueWords.length,
+          sampleWords: uniqueWords.slice(0, 10) // First 10 words for debugging
+        });
+        
+        console.log('✅ DEV MODE: Auto-selection completed - Ready for regression testing!');
+      }
+    }
+  }, [chapters, preferences.pageSize]); // Re-run if chapters load or page size changes
 
   const filteredChapters = chapters.filter(chapter =>
     chapter.id.toString().includes(searchTerm) ||
@@ -147,6 +205,22 @@ export default function Home() {
   };
 
   const handleGeneratePDF = () => {
+    // Log Safari debugging info before PDF generation
+    console.log('📄 Starting PDF generation process');
+    serverLogger.safariLog('PDF Generation Started', {
+      selectedVersesCount: selectedVerses.length,
+      selectedWordsCount: selectedWords.length,
+      preferences: preferences,
+      deviceInfo: {
+        userAgent: navigator.userAgent,
+        isSafari: /Safari/i.test(navigator.userAgent),
+        isIPhone: /iPhone/i.test(navigator.userAgent),
+        isIPad: /iPad/i.test(navigator.userAgent),
+        screenWidth: window.screen?.width,
+        screenHeight: window.screen?.height
+      }
+    });
+    
     // Use the first selected verse if available, otherwise use empty string
     // Load firstVerse from chapters, first chapter, first verse
     const firstChapter = chapters[0];
@@ -154,7 +228,14 @@ export default function Home() {
     
     // Pass the selected verses for translation, selected words, and PDF-formatted date to the PDF generator
     const pdfDate = getPDFDate();
-    generateDecoratePDF(true, preferences, firstVerse, selectedVerses, selectedWords, pdfDate);
+    
+    try {
+      generateDecoratePDF(true, preferences, firstVerse, selectedVerses, selectedWords, pdfDate);
+      console.log('✅ PDF generation call completed');
+    } catch (error) {
+      console.error('❌ PDF generation failed:', error);
+      serverLogger.safariLog('PDF Generation Error', { error: error.message, stack: error.stack });
+    }
   };
 
   const handleSidebarToggle = (value) => {

@@ -1,5 +1,36 @@
 import { jsPDF } from 'jspdf';
+
+// Import server logger for mobile Safari debugging
+const sendSafariLog = async (message, data = null) => {
+  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+    try {
+      await fetch('/api/log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          level: 'info',
+          message: `[SAFARI-PDF] ${message}`,
+          data: data,
+          timestamp: new Date().toISOString(),
+          userAgent: navigator.userAgent,
+          url: window.location.href
+        })
+      });
+    } catch (e) {
+      // Fail silently to avoid breaking PDF generation
+    }
+  }
+};
+
 export const generateDecoratePDF = async (shouldPrint = false, preferences = {}, firstVerse = '', selectedVerses = [], selectedWords = [], selectedDate = null, pageSize = 'a4') => {
+  // Send initial Safari log
+  await sendSafariLog('PDF generation started', {
+    versesCount: selectedVerses.length,
+    wordsCount: selectedWords.length,
+    pageSize: pageSize,
+    userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'Unknown'
+  });
+
   console.log("Starting PDF generation with:", {
     preferences,
     firstVerse,
@@ -609,24 +640,50 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
         selectedWordsLength: selectedWords.length
       });
       
-      // Force new page for words section on mobile devices to avoid layout issues
-      const isMobileDevice = typeof navigator !== 'undefined' && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+      // Enhanced mobile device detection including Safari-specific patterns
+      const isMobileDevice = typeof navigator !== 'undefined' && 
+        (/Mobi|Android|iPhone|iPad|Safari.*Mobile|webOS|BlackBerry|Windows Phone/i.test(navigator.userAgent) ||
+         (typeof window !== 'undefined' && window.screen && window.screen.width <= 768));
+      
+      // More specific Safari mobile detection
+      const isSafariMobile = typeof navigator !== 'undefined' && 
+        (/iPhone|iPad/i.test(navigator.userAgent) && /Safari/i.test(navigator.userAgent));
+      
+      console.log('Mobile detection details:', {
+        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A',
+        screenWidth: typeof window !== 'undefined' && window.screen ? window.screen.width : 'N/A',
+        isMobileDevice: isMobileDevice,
+        isSafariMobile: isSafariMobile
+      });
+      
+      // Send Safari debugging info
+      await sendSafariLog('Mobile detection completed', {
+        isMobileDevice,
+        isSafariMobile,
+        availableSpace,
+        estimatedWordsHeight,
+        selectedWordsLength: selectedWords.length
+      });
       
       if (estimatedWordsHeight > availableSpace) {
         console.log(`Starting new page for words section due to space constraint. Available: ${availableSpace}mm, Needed: ${estimatedWordsHeight}mm`);
+        await sendSafariLog('Creating new page - space constraint', { availableSpace, estimatedWordsHeight });
         pdf.addPage();
         currentY = borderMargin + 15; // Start after border with some margin
+        console.log('New page created, currentY reset to:', currentY);
         
         // Redraw border on new page
         pdf.setDrawColor(60, 60, 60);
         pdf.setLineWidth(1.0);
         pdf.setLineDashPattern([], 0);
         pdf.rect(borderMargin, borderMargin, pageWidth - 2 * borderMargin, pageHeight - 2 * borderMargin);
-      } else if (isMobileDevice && selectedWords.length > 2) {
-        // Force new page for mobile devices when there are more than 2 words to prevent rendering issues
-        console.log(`Starting new page for words section on mobile device with ${selectedWords.length} words`);
+      } else if (isSafariMobile || (isMobileDevice && selectedWords.length > 0)) {
+        // ALWAYS force new page for Safari mobile or any mobile device with words to prevent rendering issues
+        console.log(`FORCE: Starting new page for Safari mobile or mobile device with ${selectedWords.length} words`);
+        await sendSafariLog('FORCE creating new page - Safari mobile', { selectedWordsLength: selectedWords.length, isSafariMobile, isMobileDevice });
         pdf.addPage();
         currentY = borderMargin + 15; // Start after border with some margin
+        console.log('FORCED Mobile new page created, currentY reset to:', currentY);
         
         // Redraw border on new page
         pdf.setDrawColor(60, 60, 60);
@@ -635,6 +692,7 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
         pdf.rect(borderMargin, borderMargin, pageWidth - 2 * borderMargin, pageHeight - 2 * borderMargin);
       } else {
         console.log(`Words section fits on current page. Available: ${availableSpace}mm, Needed: ${estimatedWordsHeight}mm`);
+        await sendSafariLog('Words section fits on current page', { availableSpace, estimatedWordsHeight });
         // Add some spacing from the last verse's translation lines
         currentY += 15;
         console.log('After adding 15mm spacing, currentY is now:', currentY);
@@ -658,18 +716,41 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
           const textWidth = textMetrics.width;
           
           // Calculate optimal canvas dimensions - prevent clipping
-          // Reduce canvas size on mobile to prevent memory issues
-          const isMobileDevice = typeof navigator !== 'undefined' && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-          const scaleFactor = isMobileDevice ? 1.0 : 1.2; // Reduce scale factor on mobile
+          // More conservative sizing for Safari mobile
+          const isMobileDevice = typeof navigator !== 'undefined' && 
+            (/Mobi|Android|iPhone|iPad|Safari.*Mobile|webOS|BlackBerry|Windows Phone/i.test(navigator.userAgent) ||
+             (typeof window !== 'undefined' && window.screen && window.screen.width <= 768));
+          
+          // Even more conservative for Safari mobile
+          const isSafariMobile = typeof navigator !== 'undefined' && 
+            (/iPhone|iPad/i.test(navigator.userAgent) && /Safari/i.test(navigator.userAgent));
+          
+          // Ultra-conservative scale factors for Safari
+          let scaleFactor = 1.2; // Default
+          if (isSafariMobile) {
+            scaleFactor = 0.6; // Very conservative for Safari mobile
+          } else if (isMobileDevice) {
+            scaleFactor = 0.8; // Conservative for other mobile
+          }
           
           const canvasWidth = Math.max(textWidth + (padding * 2), 200) * scaleFactor;
-          const canvasHeight = fontSize * 2.5 * scaleFactor;
+          const canvasHeight = fontSize * 1.8 * scaleFactor; // Even more reduced for Safari
           
-          console.log(`Creating word canvas for "${word}": ${canvasWidth}x${canvasHeight}, mobile: ${isMobileDevice}`);
+          console.log(`Creating word canvas for "${word}": ${canvasWidth}x${canvasHeight}, mobile: ${isMobileDevice}, Safari: ${isSafariMobile}, scale: ${scaleFactor}`);
           
           const wordCanvas = document.createElement('canvas');
-          wordCanvas.width = canvasWidth;
-          wordCanvas.height = canvasHeight;
+          
+          // Very conservative canvas limits for Safari
+          const maxCanvasSize = isSafariMobile ? 1024 : 2048;
+          if (canvasWidth > maxCanvasSize || canvasHeight > maxCanvasSize) {
+            console.warn(`Canvas dimensions too large for Safari mobile, reducing from ${canvasWidth}x${canvasHeight} to max ${maxCanvasSize}`);
+            wordCanvas.width = Math.min(canvasWidth, maxCanvasSize);
+            wordCanvas.height = Math.min(canvasHeight, maxCanvasSize);
+          } else {
+            wordCanvas.width = canvasWidth;
+            wordCanvas.height = canvasHeight;
+          }
+          
           const wordCtx = wordCanvas.getContext('2d', { alpha: false });
           
           if (!wordCtx) {
@@ -705,17 +786,21 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
       // Process words in pairs (2 words per row for clean 4-column layout)
       console.log('Starting word processing loop with currentY:', currentY);
       for (let i = 0; i < selectedWords.length; i += wordsPerRow) {
-        // Validate currentY before processing each row - only reset if truly invalid
-        if (isNaN(currentY) || currentY < 0 || currentY > pageHeight) {
-          console.error('Invalid currentY before word row processing:', currentY);
-          currentY = borderMargin + 20; // Reset to safe value only if truly invalid
+        // Robust currentY validation for Safari compatibility
+        if (isNaN(currentY) || currentY < borderMargin || currentY > pageHeight - borderMargin) {
+          console.error('Invalid currentY detected, resetting:', currentY);
+          currentY = borderMargin + 20; // Reset to safe value
         }
         
-        // Check if we need a new page - use smaller buffer since we calculated space above
-        if (currentY > pageHeight - 40) { // Reduced from 120 to 40 for more accurate page usage
-          console.log(`Creating new page for words: currentY (${currentY}) > pageHeight - 40 (${pageHeight - 40})`);
+        console.log(`Processing word row ${i / wordsPerRow + 1} at currentY: ${currentY}`);
+        
+        // Check if we need a new page - more conservative for Safari
+        const spaceNeeded = wordRowHeight + meaningRowHeight + rowSpacing + 20; // Buffer for Safari
+        if (currentY + spaceNeeded > pageHeight - borderMargin - 10) {
+          console.log(`Creating new page for words: currentY (${currentY}) + spaceNeeded (${spaceNeeded}) > pageHeight limit (${pageHeight - borderMargin - 10})`);
           pdf.addPage();
           currentY = borderMargin + 15; // Consistent with other new page logic
+          console.log('New page created for words, currentY reset to:', currentY);
           
           // Redraw border on new page
           pdf.setDrawColor(60, 60, 60);
@@ -725,7 +810,7 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
         }
         
         const rowWords = selectedWords.slice(i, i + wordsPerRow);
-        console.log(`Processing word row ${i / wordsPerRow + 1}, words:`, rowWords, 'at currentY:', currentY);
+        console.log(`Processing words:`, rowWords.map(w => w.substring(0, 10) + '...'), 'at currentY:', currentY);
         
         // Add words in their respective columns
         rowWords.forEach((word, wordIndex) => {
@@ -749,15 +834,55 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
             const wordImgHeight = (wordCanvas.height * wordImgWidth) / wordCanvas.width;
             const wordXPos = 20 + (wordColumnIndex * columnWidth); // Centered positioning with equal margins
             
-            // Validate coordinates before adding to PDF
-            if (isNaN(wordXPos) || isNaN(currentY) || isNaN(wordImgWidth) || isNaN(wordImgHeight)) {
-              console.error('Invalid coordinates for word:', { word, wordXPos, currentY, wordImgWidth, wordImgHeight });
+            // Enhanced coordinate validation for Safari
+            if (isNaN(wordXPos) || isNaN(currentY) || isNaN(wordImgWidth) || isNaN(wordImgHeight) ||
+                wordXPos < 0 || currentY < 0 || wordImgWidth <= 0 || wordImgHeight <= 0) {
+              console.error('Invalid coordinates for word:', { 
+                word, 
+                wordXPos, 
+                currentY, 
+                wordImgWidth, 
+                wordImgHeight,
+                columnWidth,
+                wordColumnIndex 
+              });
               return;
             }
             
             console.log(`Adding word "${word}" at position:`, { x: wordXPos, y: currentY, width: wordImgWidth, height: wordImgHeight });
             
-            pdf.addImage(wordImgData, 'PNG', wordXPos, currentY, wordImgWidth, wordImgHeight, undefined, 'FAST');
+            // Add comprehensive error handling for Safari mobile
+            try {
+              pdf.addImage(wordImgData, 'PNG', wordXPos, currentY, wordImgWidth, wordImgHeight, undefined, 'FAST');
+              console.log(`✅ Successfully added word "${word}" to PDF`);
+            } catch (pdfError) {
+              console.error(`❌ Failed to add word "${word}" to PDF:`, pdfError);
+              // Try alternative approach for Safari
+              try {
+                pdf.addImage(wordImgData, 'PNG', wordXPos, currentY, wordImgWidth, wordImgHeight, undefined, 'NONE');
+                console.log(`✅ Successfully added word "${word}" to PDF with NONE compression`);
+              } catch (fallbackError) {
+                console.error(`❌ Complete failure adding word "${word}":`, fallbackError);
+                return; // Skip this word completely
+              }
+            }
+            
+            // Clean up canvas for Safari memory management
+            if (isMobileDevice || isSafariMobile) {
+              // More aggressive cleanup for mobile Safari
+              try {
+                wordCanvas.width = 1;
+                wordCanvas.height = 1;
+                const ctx = wordCanvas.getContext('2d');
+                if (ctx) {
+                  ctx.clearRect(0, 0, 1, 1);
+                }
+                console.log(`🧹 Cleaned up canvas for word "${word}"`);
+              } catch (cleanupError) {
+                console.warn('Canvas cleanup failed:', cleanupError);
+              }
+            }
+            
           } catch (error) {
             console.error(`Error processing word "${word}":`, error);
             // Continue with next word instead of breaking the entire loop
@@ -765,19 +890,195 @@ export const generateDecoratePDF = async (shouldPrint = false, preferences = {},
         });
         
         currentY += wordRowHeight;
+        console.log('After adding wordRowHeight, currentY is now:', currentY);
         
         // Add empty space for meanings in columns 0 and 2 (meaning columns on the left)
         currentY += 2; // Very minimal vertical spacing with optimized canvas
+        console.log('After adding meaning space, currentY is now:', currentY);
         
         currentY += rowSpacing; // Very minimal space before next word pair
+        console.log('After adding rowSpacing, currentY is now:', currentY);
+        
+        // Validate currentY after each increment for Safari
+        if (isNaN(currentY) || currentY < 0) {
+          console.error('currentY became invalid during loop:', currentY);
+          currentY = borderMargin + 20; // Reset to safe value
+        }
       }
+      
+      console.log('Finished processing all words. Final currentY:', currentY);
+      
+      // Safari mobile safety check - ensure we actually have a second page if words were processed
+      const totalPages = pdf.internal.getNumberOfPages();
+      console.log(`📄 PDF has ${totalPages} pages after processing ${selectedWords.length} words`);
+      await sendSafariLog('PDF page count check', { totalPages, selectedWordsLength: selectedWords.length });
+      
+      if (selectedWords.length > 0 && totalPages === 1) {
+        console.warn('⚠️ Safari mobile issue detected - only 1 page despite having words. Force creating second page.');
+        await sendSafariLog('CRITICAL: Only 1 page detected - force creating second page', { totalPages, selectedWordsLength: selectedWords.length });
+        pdf.addPage();
+        
+        // Redraw border on forced page
+        pdf.setDrawColor(60, 60, 60);
+        pdf.setLineWidth(1.0);
+        pdf.setLineDashPattern([], 0);
+        pdf.rect(borderMargin, borderMargin, pageWidth - 2 * borderMargin, pageHeight - 2 * borderMargin);
+        
+        // Add a debug message to the forced page
+        pdf.setFontSize(12);
+        pdf.setTextColor(128, 128, 128);
+        pdf.text('Safari mobile compatibility page - words section', 20, 30);
+        
+        console.log('✅ Forced second page created for Safari mobile compatibility');
+        await sendSafariLog('Forced second page created successfully', { finalPages: pdf.internal.getNumberOfPages() });
+      }
+      
+      // Add safety check before proceeding to PDF display
+      console.log('🔍 Preparing to exit words section and proceed to PDF display...');
+      await sendSafariLog('Exiting words section, proceeding to PDF display', { 
+        wordsProcessed: selectedWords.length, 
+        finalPages: pdf.internal.getNumberOfPages() 
+      });
     }
+    
+    // Additional safety check after words section
+    console.log('📋 Words section completed, PDF object status check...');
+    await sendSafariLog('PDF object status check', { 
+      pdfExists: !!pdf,
+      pdfType: typeof pdf,
+      pageCount: pdf ? pdf.internal.getNumberOfPages() : 'N/A'
+    });
 
-    if (shouldPrint) {
-      pdf.output('dataurlnewwindow');
-    } else {
-      const pdfOutput = pdf.output('datauristring');
-      window.open(pdfOutput, '_blank');
+    // Log final PDF generation step with detailed flow monitoring
+    console.log('🔥 PDF generation completed, attempting to display PDF...');
+    await sendSafariLog('PDF generation completed, attempting to display', { 
+      totalPages: pdf.internal.getNumberOfPages(),
+      shouldPrint,
+      timestamp: new Date().toISOString()
+    });
+
+    try {
+      console.log('📍 Entering PDF display logic...');
+      await sendSafariLog('Entering PDF display logic', { shouldPrint });
+      
+      if (shouldPrint) {
+        console.log('📄 Opening PDF for printing...');
+        await sendSafariLog('Opening PDF for printing');
+        
+        console.log('📄 Calling pdf.output(dataurlnewwindow)...');
+        await sendSafariLog('About to call pdf.output dataurlnewwindow');
+        
+        const printResult = pdf.output('dataurlnewwindow');
+        
+        console.log('📄 pdf.output(dataurlnewwindow) completed, result:', printResult);
+        await sendSafariLog('pdf.output dataurlnewwindow completed', { 
+          resultType: typeof printResult,
+          resultValue: printResult 
+        });
+        
+        // Check if printing failed (result is null) and provide fallback
+        if (printResult === null || printResult === undefined) {
+          console.log('📄 Print mode failed, falling back to new window mode...');
+          await sendSafariLog('Print mode failed, falling back to new window');
+          
+          const pdfOutput = pdf.output('datauristring');
+          console.log('📄 PDF fallback output generated, length:', pdfOutput.length);
+          await sendSafariLog('PDF fallback output generated', { 
+            outputLength: pdfOutput.length 
+          });
+          
+          let downloadInitiated = false;
+          try {
+            const newWindow = window.open(pdfOutput, '_blank');
+            console.log('📄 Fallback window.open called, result:', newWindow);
+            await sendSafariLog('Fallback window.open called', { 
+              windowResult: newWindow ? 'success' : 'failed' 
+            });
+            if (!newWindow) {
+              throw new Error('window.open failed');
+            }
+          } catch (e) {
+            // Always try download if window.open fails
+            console.log('📄 Fallback window.open failed, trying download...');
+            await sendSafariLog('Fallback window.open failed, trying download');
+            const link = document.createElement('a');
+            link.href = pdfOutput;
+            link.download = `Al-Tanzeel-${new Date().toISOString().split('T')[0]}.pdf`;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            setTimeout(() => document.body.removeChild(link), 100);
+            downloadInitiated = true;
+            console.log('📄 Download link fallback triggered');
+            await sendSafariLog('Download link fallback triggered');
+          }
+          // If download was not initiated, force it as last resort
+          if (!downloadInitiated) {
+            const link = document.createElement('a');
+            link.href = pdfOutput;
+            link.download = `Al-Tanzeel-${new Date().toISOString().split('T')[0]}.pdf`;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            setTimeout(() => document.body.removeChild(link), 100);
+            console.log('📄 Forced download link fallback triggered');
+            await sendSafariLog('Forced download link fallback triggered');
+          }
+        }
+        
+      } else {
+        console.log('📄 Opening PDF in new window...');
+        await sendSafariLog('Opening PDF in new window');
+        
+        console.log('📄 Calling pdf.output(datauristring)...');
+        await sendSafariLog('About to call pdf.output datauristring');
+        
+        const pdfOutput = pdf.output('datauristring');
+        
+        console.log('📄 PDF output generated, length:', pdfOutput.length);
+        await sendSafariLog('PDF output generated, calling window.open', { 
+          outputLength: pdfOutput.length,
+          outputPreview: pdfOutput.substring(0, 100) + '...'
+        });
+        
+        console.log('📄 Calling window.open...');
+        await sendSafariLog('About to call window.open');
+        
+        const newWindow = window.open(pdfOutput, '_blank');
+        
+        console.log('📄 window.open called, result:', newWindow);
+        await sendSafariLog('window.open called', { 
+          windowResult: newWindow ? 'success' : 'failed',
+          windowType: typeof newWindow
+        });
+        
+        // Additional Safari mobile fallback
+        if (!newWindow) {
+          console.log('📄 window.open failed, trying alternative approach...');
+          await sendSafariLog('window.open failed, trying alternative');
+          // Safari requires the link to be in the DOM for download to work
+          const link = document.createElement('a');
+          link.href = pdfOutput;
+          link.download = `Al-Tanzeel-${new Date().toISOString().split('T')[0]}.pdf`;
+          link.style.display = 'none';
+          document.body.appendChild(link);
+          link.click();
+          setTimeout(() => document.body.removeChild(link), 100);
+          console.log('📄 Download link fallback triggered');
+          await sendSafariLog('Download link fallback triggered');
+        }
+      }
+      
+      console.log('✅ PDF display process completed successfully');
+      await sendSafariLog('PDF display process completed successfully');
+    } catch (displayError) {
+      console.error('❌ PDF display failed:', displayError);
+      await sendSafariLog('PDF display failed', { 
+        error: displayError.message,
+        stack: displayError.stack,
+        name: displayError.name
+      });
+      throw displayError;
     }
 
     return pdf;
