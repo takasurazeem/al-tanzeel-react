@@ -77,7 +77,12 @@ class ServerLogger {
   // Manual logging method for specific Safari mobile debugging
   safariLog(message, data = null) {
     const logMessage = `[SAFARI-DEBUG] ${message}`;
-    this.originalConsole.log(logMessage, data);
+    // Fix: Check if originalConsole.log is a function before calling
+    if (this.originalConsole && typeof this.originalConsole.log === 'function') {
+      this.originalConsole.log(logMessage, data);
+    } else if (typeof window !== 'undefined' && window.console && typeof window.console.log === 'function') {
+      window.console.log(logMessage, data);
+    } // else: fail silently
     this.sendToServer('info', `${logMessage} ${data ? JSON.stringify(data) : ''}`);
   }
 }
