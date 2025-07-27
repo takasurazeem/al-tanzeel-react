@@ -13,4 +13,4 @@ const nextConfig = {
   assetPrefix: '/al-tanzeel-react',
 };
 
-export default nextConfig;
+module.exports = nextConfig;
