@@ -4,6 +4,7 @@ import "./globals.css";
 import '@fontsource/noto-sans-arabic';
 import '@fontsource/amiri';
 import { LanguageProvider } from './contexts/LanguageContext';
+import { FontLoader } from './components/FontLoader/FontLoader';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,6 +26,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        <FontLoader />
         <LanguageProvider>
           {children}
         </LanguageProvider>
