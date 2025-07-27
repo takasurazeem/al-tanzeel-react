@@ -227,44 +227,6 @@ export const Sidebar = ({ onPreferencesChange, fontSize, onFontSizeChange, isOpe
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="pageSize">{t('pageSize')}</label>
-              <select
-                id="pageSize"
-                name="pageSize"
-                value={formData.pageSize}
-                onChange={handleInputChange}
-                className={styles.input}
-              >
-                <option value="a4">{t('pageSizes.a4')}</option>
-                <option value="a3">{t('pageSizes.a3')}</option>
-                <option value="a5">{t('pageSizes.a5')}</option>
-                <option value="letter">{t('pageSizes.letter')}</option>
-                <option value="legal">{t('pageSizes.legal')}</option>
-              </select>
-            </div>
-
-            <div className={styles.formGroup}>
-              <label>{t('fontSize')}</label>
-              <div className={styles.fontControls}>
-                <button 
-                  type="button"
-                  onClick={() => onFontSizeChange(prev => Math.max(12, prev - 2))}
-                  className={styles.fontButton}
-                >
-                  A-
-                </button>
-                <span className={styles.fontSizeDisplay}>{fontSize}px</span>
-                <button 
-                  type="button"
-                  onClick={() => onFontSizeChange(prev => Math.min(48, prev + 2))}
-                  className={styles.fontButton}
-                >
-                  A+
-                </button>
-              </div>
-            </div>
-
-            <div className={styles.formGroup}>
               <label>{t('dateSettings')}</label>
               <div className={styles.datePickerContainer}>
                 <div className={styles.calendarTypeSelector}>
@@ -308,6 +270,44 @@ export const Sidebar = ({ onPreferencesChange, fontSize, onFontSizeChange, isOpe
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="pageSize">{t('pageSize')}</label>
+              <select
+                id="pageSize"
+                name="pageSize"
+                value={formData.pageSize}
+                onChange={handleInputChange}
+                className={styles.input}
+              >
+                <option value="a4">{t('pageSizes.a4')}</option>
+                <option value="a3">{t('pageSizes.a3')}</option>
+                <option value="a5">{t('pageSizes.a5')}</option>
+                <option value="letter">{t('pageSizes.letter')}</option>
+                <option value="legal">{t('pageSizes.legal')}</option>
+              </select>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>{t('fontSize')}</label>
+              <div className={styles.fontControls}>
+                <button 
+                  type="button"
+                  onClick={() => onFontSizeChange(prev => Math.max(12, prev - 2))}
+                  className={styles.fontButton}
+                >
+                  A-
+                </button>
+                <span className={styles.fontSizeDisplay}>{fontSize}px</span>
+                <button 
+                  type="button"
+                  onClick={() => onFontSizeChange(prev => Math.min(48, prev + 2))}
+                  className={styles.fontButton}
+                >
+                  A+
+                </button>
               </div>
             </div>
           </form>
